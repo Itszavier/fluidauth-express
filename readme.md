@@ -1,6 +1,5 @@
-<!-- @format -->
 
-Here are some commit emojis you can use to categorize and describe your commits:
+
 
 - 🎉 `:tada:` - Initial commit
 - ✨ `:sparkles:` - Introduce new features
@@ -19,4 +18,4 @@ Here are some commit emojis you can use to categorize and describe your commits:
 - 🛠️ `:hammer_and_wrench:` - Add or update build scripts
 - 🚚 `:truck:` - Move or rename files
 
-You can combine these with a short description for clear commit messages!
+
