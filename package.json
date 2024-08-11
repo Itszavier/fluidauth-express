@@ -1,0 +1,30 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --watch ./server.ts --ext ts --exec tsx ./server.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "tsx": "^4.17.0"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "cryptr": "^6.3.0",
+    "express": "^4.19.2",
+    "iocane": "^5.2.0",
+    "node-encryption": "^2.0.1",
+    "nodemon": "^3.1.4",
+    "string-crypto": "^3.0.2"
+  }
+}

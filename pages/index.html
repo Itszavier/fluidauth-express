@@ -1,0 +1,50 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fluid Auth</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+
+  <body>
+    <div class="login">
+      <h1>Login Page</h1>
+      <p>The ultimate easy authencation package</p>
+
+      <form action="/login" method="post">
+        <div class="form_control">
+          <label for="email">Email</label>
+          <input
+            value="user1@gmail.com"
+            type="text"
+            name="email"
+            placeholder="email"
+            id="email"
+          />
+        </div>
+
+        <div class="form_control">
+          <label for="password">Password</label>
+          <input
+            value="efrefef"
+            type="password"
+            name="password"
+            placeholder="password"
+            id="password"
+          />
+        </div>
+
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <script>
+      function handleLogin() {
+        console.log("handle login");
+      }
+    </script>
+  </body>
+</html>
