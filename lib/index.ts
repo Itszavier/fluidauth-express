@@ -104,14 +104,18 @@ export default class FluidAuth {
 
   serializeUser(callback: (user: any) => any) {
     if (typeof callback !== "function") {
-      throw new Error("[FluidAuth]: serializeUser callback must be a function.");
+      throw new Error(
+        "[FluidAuth]: serializeUser callback must be a function."
+      );
     }
     this._session.serializeUser = callback;
   }
 
-  deserializeUser(callback: (id: string) => Express.User) {
+  deserializeUser(callback: (id: string) => Express.User | null) {
     if (typeof callback !== "function") {
-      throw new Error("[FluidAuth]: deserializeUser callback must be a function.");
+      throw new Error(
+        "[FluidAuth]: deserializeUser callback must be a function."
+      );
     }
     this._session.deserializeUser = callback;
   }

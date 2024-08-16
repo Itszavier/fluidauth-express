@@ -3,6 +3,7 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import FluidAuth from "./lib";
 import { credentialProvider } from "./providers";
+import { users } from "./mock";
 
 const app = express();
 
@@ -11,6 +12,16 @@ const fluidAuth = new FluidAuth({
   session: {
     secret: "eefefregfeger",
   },
+});
+
+fluidAuth.serializeUser(function (user) {
+  return user.id;
+});
+
+fluidAuth.deserializeUser(function (id) {
+  const user = users.find((user) => user.id === id) || null;
+  if (!user) console.log("[deserializeUser]: user not found");
+  return user;
 });
 
 const PORT = process.env.PORT || 3000;
@@ -33,6 +44,14 @@ app.get("/", (req, res) => {
 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.resolve(__dirname, "pages", "dashboard.html"));
+});
+
+app.get("/session", function (req, res, next) {
+  res.json({
+    message: "session page",
+    session: req.session || null,
+    user: req.user || null,
+  });
 });
 
 // Post requests
