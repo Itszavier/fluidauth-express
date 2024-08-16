@@ -6,6 +6,7 @@ import type { Response, Request, NextFunction } from "express";
 import { Session, ISession, ISessionConfig } from "./core/session";
 import { BaseProvider } from "./base/BaseProvider";
 import { encrypt } from "./utils/dev";
+import { ErrorNames, FluidAuthError } from "./core/Error";
 
 export interface FluidAuthConfig {
   providers: BaseProvider[];
@@ -65,6 +66,38 @@ export default class FluidAuth {
     return provider.authenticate.bind(provider);
   }
 
+  handleRedirectUri(ProviderName: string) {
+    if (!ProviderName) {
+      throw new FluidAuthError({
+        name: ErrorNames.MissingProviderNameError,
+        message: "[FluidAuth](HandleRedirectUri): Missing Provider Name as param",
+      });
+    }
+
+    const provider = this.providers.find(
+      (providers) => providers.config.name === ProviderName
+    );
+
+    if (!provider) {
+      throw new FluidAuthError({
+        name: ErrorNames.ProviderNotFoundError,
+        message: `[FluidAuth](HandleRedirectUri): failed to find a privider with the name ${ProviderName}`,
+      });
+    }
+
+    return async (req: Request, res: Response, next: NextFunction) => {
+      const code = req.query.code as string;
+      try {
+        await provider.ExchangeCodeForToken(code);
+        res.status(200).json({
+          message: "success",
+        });
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
+  
   async createSession(req: Request, res: Response, userData: Express.User) {
     const user = await this._session.serializeUser(userData);
 
@@ -104,18 +137,14 @@ export default class FluidAuth {
 
   serializeUser(callback: (user: any) => any) {
     if (typeof callback !== "function") {
-      throw new Error(
-        "[FluidAuth]: serializeUser callback must be a function."
-      );
+      throw new Error("[FluidAuth]: serializeUser callback must be a function.");
     }
     this._session.serializeUser = callback;
   }
 
   deserializeUser(callback: (id: string) => Express.User | null) {
     if (typeof callback !== "function") {
-      throw new Error(
-        "[FluidAuth]: deserializeUser callback must be a function."
-      );
+      throw new Error("[FluidAuth]: deserializeUser callback must be a function.");
     }
     this._session.deserializeUser = callback;
   }
@@ -123,6 +152,4 @@ export default class FluidAuth {
   session() {
     return this._session.manageSession.bind(this._session);
   }
-
-  handleCallBack() {}
 }

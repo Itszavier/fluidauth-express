@@ -1,14 +1,16 @@
+/** @format */
+
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
 import FluidAuth from "./lib";
-import { credentialProvider } from "./providers";
+import { credentialProvider, googleProvider } from "./providers";
 import { users } from "./mock";
 
 const app = express();
 
 const fluidAuth = new FluidAuth({
-  providers: [credentialProvider],
+  providers: [credentialProvider, googleProvider],
   session: {
     secret: "eefefregfeger",
   },
@@ -62,5 +64,9 @@ app.post("/login", fluidAuth.authenticate("credential"), (req, res) => {
     session: req.session || null,
   });
 });
+
+app.get("/login/google", fluidAuth.authenticate("google"));
+
+app.get("/redirect/google", fluidAuth.handleRedirectUri("google"));
 
 app.listen(PORT, () => console.log(`Alive on http://localhost:${PORT}`));

@@ -1,5 +1,6 @@
 /** @format */
 import { CredentialProvider } from "./lib/providers/credential";
+import { GoogleProvider } from "./lib/providers/google";
 import { users } from "./mock";
 
 export const credentialProvider = new CredentialProvider({
@@ -15,3 +16,5 @@ export const credentialProvider = new CredentialProvider({
     done(null, user);
   },
 });
+
+export const googleProvider = new GoogleProvider();

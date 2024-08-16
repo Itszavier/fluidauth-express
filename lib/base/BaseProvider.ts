@@ -19,8 +19,6 @@ type BaseProviderConfig =
   | {
       type: "OAuth2";
       name: string;
-      redirectUri: string;
-      authorizationServerUrl: string;
     };
 
 export class BaseProvider {
@@ -38,7 +36,7 @@ export class BaseProvider {
 
     if (!user) {
       throw new FluidAuthError({
-        name: ErrorNames.Unauthorized,
+        name: ErrorNames.UnauthorizedError,
         message: info?.message || "Unauthorized",
         code: info?.statusCode || 401,
       });
@@ -46,6 +44,8 @@ export class BaseProvider {
 
     return user;
   };
+
+  async ExchangeCodeForToken(code: string) {}
 
   // Example method to demonstrate type narrowing
   authenticate(req: Request, res: Response, next: NextFunction) {}
