@@ -85,7 +85,7 @@ export default class FluidAuth {
       });
     }
 
-    return this.handleRedirectUri.bind(provider);
+    return provider.handleRedirectUri.bind(provider);
   }
 
   async createSession(req: Request, res: Response, userData: Express.User) {

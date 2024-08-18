@@ -10,6 +10,7 @@ export interface ISession {
   name: string;
   expires: Date;
   user: string | Express.User;
+  [key: string]: any;
 }
 
 export interface ISessionConfig {

@@ -23,6 +23,6 @@ export const credentialProvider = new CredentialProvider({
 export const googleProvider = new GoogleProvider({
   client_id: process.env.CLIENT_ID as string,
   client_secret: process.env.CLIENT_SECRET as string,
-  redirect_uri: "https://glorious-spoon-x499jjgjg9r2vr9v-3000.app.github.dev/redirect/google",
-  scope: [""],
+  redirect_uri: "http://localhost:3000/redirect/google",
+  scopes: ["openid", 'profile', 'email'],
 });
