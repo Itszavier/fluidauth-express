@@ -45,7 +45,12 @@ export class BaseProvider {
     return user;
   };
 
-  async ExchangeCodeForToken(code: string) {}
+  async handleRedirectUri(req: Request, res: Response, next: NextFunction) {
+    console.warn(
+      `${this.config.name} Provider redirect uri handler function not implemented`
+    );
+    next();
+  }
 
   // Example method to demonstrate type narrowing
   authenticate(req: Request, res: Response, next: NextFunction) {}

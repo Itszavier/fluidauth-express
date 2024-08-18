@@ -85,19 +85,9 @@ export default class FluidAuth {
       });
     }
 
-    return async (req: Request, res: Response, next: NextFunction) => {
-      const code = req.query.code as string;
-      try {
-        await provider.ExchangeCodeForToken(code);
-        res.status(200).json({
-          message: "success",
-        });
-      } catch (error) {
-        next(error);
-      }
-    };
+    return this.handleRedirectUri.bind(provider);
   }
-  
+
   async createSession(req: Request, res: Response, userData: Express.User) {
     const user = await this._session.serializeUser(userData);
 
