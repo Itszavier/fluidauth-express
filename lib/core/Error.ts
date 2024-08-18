@@ -1,8 +1,10 @@
 /** @format */
 
 export enum ErrorNames {
-  "BadRequest" = "BadRequest",
-  "Unauthorized" = "Unauthorized",
+"BadRequestError" = "BadRequestError",
+"UnauthorizedError" = "UnauthorizedError",
+  "ProviderNotFoundError" = "ProviderNotFoundError",
+  "MissingProviderNameError" = "MissingProviderNameError",
 }
 
 // Define the type that allows for both predefined and custom values

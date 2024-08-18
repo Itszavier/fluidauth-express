@@ -35,11 +35,3 @@ export function decrypt(encryptedText: string, secret: string): string {
 
   return decrypted;
 }
-
-// Example usage
-const secret = "mysecretkey";
-const text = "Hello, World!";
-const encrypted = encrypt(text, secret);
-console.log("Encrypted:", encrypted);
-const decrypted = decrypt(encrypted, secret);
-console.log("Decrypted:", decrypted);

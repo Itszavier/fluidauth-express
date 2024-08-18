@@ -1,6 +1,10 @@
 /** @format */
 import { CredentialProvider } from "./lib/providers/credential";
+import { GoogleProvider } from "./lib/providers/google";
 import { users } from "./mock";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const credentialProvider = new CredentialProvider({
   async verify(email, password, done) {
@@ -14,4 +18,11 @@ export const credentialProvider = new CredentialProvider({
 
     done(null, user);
   },
+});
+
+export const googleProvider = new GoogleProvider({
+  client_id: process.env.CLIENT_ID as string,
+  client_secret: process.env.CLIENT_SECRET as string,
+  redirect_uri: "https://glorious-spoon-x499jjgjg9r2vr9v-3000.app.github.dev/redirect/google",
+  scope: [""],
 });

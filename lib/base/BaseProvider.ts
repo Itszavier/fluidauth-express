@@ -19,8 +19,6 @@ type BaseProviderConfig =
   | {
       type: "OAuth2";
       name: string;
-      redirectUri: string;
-      authorizationServerUrl: string;
     };
 
 export class BaseProvider {
@@ -38,7 +36,7 @@ export class BaseProvider {
 
     if (!user) {
       throw new FluidAuthError({
-        name: ErrorNames.Unauthorized,
+        name: ErrorNames.UnauthorizedError,
         message: info?.message || "Unauthorized",
         code: info?.statusCode || 401,
       });
@@ -46,6 +44,13 @@ export class BaseProvider {
 
     return user;
   };
+
+  async handleRedirectUri(req: Request, res: Response, next: NextFunction) {
+    console.warn(
+      `${this.config.name} Provider redirect uri handler function not implemented`
+    );
+    next();
+  }
 
   // Example method to demonstrate type narrowing
   authenticate(req: Request, res: Response, next: NextFunction) {}
