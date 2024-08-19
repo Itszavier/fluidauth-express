@@ -1,9 +1,10 @@
 /** @format */
 
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider, DoneFunction } from "../base/BaseProvider";
+import { BaseProvider } from "../base/BaseProvider";
 import { ErrorNames, FluidAuthError } from "../core/Error";
 import { CreateSessionFunction } from "..";
+import { DoneFunction } from "../base/types";
 
 interface ICredentialProviderConfig {
   verify: (email: string, password: string, done: DoneFunction) => Promise<any>; // Use Promise for async operations

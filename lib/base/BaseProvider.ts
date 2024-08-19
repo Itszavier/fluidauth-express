@@ -3,12 +3,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorNames, FluidAuthError } from "../core/Error";
 import { CreateSessionFunction } from "..";
-
-export type DoneFunction = (
-  err?: Error | null,
-  user?: Express.User,
-  info?: { statusCode?: number; message?: string; name?: string } | null
-) => void;
+import { DoneFunction } from "./types";
 
 /** @format */
 type BaseProviderConfig =
@@ -38,7 +33,7 @@ export class BaseProvider {
       throw new FluidAuthError({
         name: ErrorNames.UnauthorizedError,
         message: info?.message || "Unauthorized",
-        code: info?.statusCode || 401,
+        code: info?.code || 401,
       });
     }
 

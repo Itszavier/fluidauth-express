@@ -1,10 +1,12 @@
 /** @format */
 import querystring from "querystring";
+import utils from "util";
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider, DoneFunction } from "../base/BaseProvider";
+import { BaseProvider } from "../base/BaseProvider";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { ErrorNames, FluidAuthError } from "../core/Error";
+import { DoneFunction, VerifyAsyncReturnType } from "../base/types";
+import { FluidAuthError } from "../core/Error";
 
 export interface IGoogleProfile {
   name?: string;
@@ -152,6 +154,13 @@ export class GoogleProvider extends BaseProvider {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    const verifyAsync = utils
+      .promisify(this.configOptions.verify)
+      .bind(this.configOptions) as (
+      arg1: IGoogleData,
+      arg2: IGoogleProfile
+    ) => Promise<VerifyAsyncReturnType>;
+
     try {
       const { code, state } = req.query;
 
@@ -174,19 +183,13 @@ export class GoogleProvider extends BaseProvider {
         picture: payload.picture as string,
       };
 
-      this.configOptions.verify(data, profile, async (error, user, info) => {
-        if (error) {
-          return next(error);
-        }
+      const { user, info } = await verifyAsync(data, profile);
 
-        if (!user) {
-          return next(new FluidAuthError({ mess }));
-        }
+      if (!user) {
+        throw new FluidAuthError({ message: info?.message || "UnAuthorized" });
+      }
 
-        await this.createSession(req, res, user);
-        // Handle successful authentication (e.g., create session, set cookies, etc.)
-        res.json({ message: "User authenticated", user });
-      });
+      res.status(200).json({ message: "authorize", profile, payload });
     } catch (error) {
       console.error("Error handling redirect URI:", error);
       res.status(500).send("Internal Server Error");
