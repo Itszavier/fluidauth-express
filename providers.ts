@@ -23,7 +23,7 @@ export const credentialProvider = new CredentialProvider({
 export const googleProvider = new GoogleProvider({
   client_id: process.env.CLIENT_ID as string,
   client_secret: process.env.CLIENT_SECRET as string,
-  redirect_uri: "http://localhost:3000/redirect/google",
+  redirect_uri: "https://dfkpzk-3000.csb.app/redirect/google",
 
   async verify(data, profile) {
     const userExist = users.find((user) => user.email === profile.email);

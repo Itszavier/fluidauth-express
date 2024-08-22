@@ -49,30 +49,29 @@ export class Session {
     return oneWeekFromNow;
   }
 
+  /**
+   * manage the session on every request
+   * @param req
+   * @param res
+   * @param next
+   * @returns
+   */
+
   async manageSession(req: Request, res: Response, next: NextFunction) {
     const session = req.cookies[this.sessionInfo.name];
 
     if (!session) {
-      console.log(`[Debug]: No session cookie found`);
       return next();
     }
 
     const sessionId = await decrypt(session, this.sessionInfo.secret);
 
-    if (sessionId) {
-      console.log(`[Debug]: Decryption successful. Session ID: ${sessionId}`);
-    } else {
-      console.error(`[Error]: Decryption failed. Session ID could not be retrieved.`);
-    }
-
     try {
-      console.log(
-        `[Debug]: Attempting to retrieve session data for session ID: ${sessionId}`
-      );
+   
       const sessionData = await this.store.get(sessionId);
 
       if (!sessionData) {
-        console.log(`[Debug]: No session data found for session ID: ${sessionId}`);
+       
         res.clearCookie(this.sessionInfo.name);
         return next();
       }
@@ -83,14 +82,12 @@ export class Session {
         return next();
       }
 
-      console.log(`[Debug]: Session is valid, attaching session data to req.session`);
       req.session = sessionData;
       next();
       req.user = await this.deserializeUser(sessionData.user);
-      console.log(`[Debug]: User deserialized: ${JSON.stringify(req.user)}`);
+    
     } catch (error) {
       next(error);
-      console.error(`[Error]: Failed to retrieve session data:`, error);
       res.clearCookie(this.sessionInfo.name);
     }
   }

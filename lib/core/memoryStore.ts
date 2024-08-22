@@ -21,10 +21,14 @@ export class MemoryStore extends BaseSessionStore {
     console.log(`[Debug]: Retrieving session with ID: ${sessionId}`);
     const sessionData = this.db.get(sessionId) || null;
     if (sessionData) {
-      console.log(`[Debug]: Session data retrieved: ${JSON.stringify(sessionData)}`);
+      console.log(
+        `[Debug]: Session data retrieved: ${JSON.stringify(sessionData)}`
+      );
     } else {
       console.log(`[Debug]: No session data found for ID: ${sessionId}`);
     }
     return sessionData;
   }
+
+  async clean(): Promise<void> {}
 }
