@@ -1,12 +1,9 @@
 /** @format */
 import querystring from "querystring";
-import utils from "util";
+
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider, IVerifyFunctionValidationData } from "../base/BaseProvider";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { DoneFunction, VerifyAsyncReturnType } from "../base/types";
-import { FluidAuthError } from "../core/Error";
+import { BaseProvider, IValidationData } from "../base/BaseProvider";
 
 export interface IGoogleProfile {
   name: string;
@@ -29,11 +26,8 @@ export interface IGoogleProviderConfig {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
-  scopes: string[];
-  verify: (
-    data: IGoogleData,
-    profile: IGoogleProfile
-  ) => Promise<IVerifyFunctionValidationData>;
+  scopes?: string[];
+  verify: (data: IGoogleData, profile: IGoogleProfile) => Promise<IValidationData>;
 }
 
 export class GoogleProvider extends BaseProvider {
@@ -48,9 +42,10 @@ export class GoogleProvider extends BaseProvider {
     this.configOptions = config;
   }
 
-  authenticate(req: Request, res: Response, next: NextFunction): void {
+  authenticate(req: Request, res: Response): void {
     const state = crypto.randomBytes(8).toString("hex");
-    const scopes = this.configOptions.scopes.join(" ");
+    
+    const scopes = this.configOptions.scopes ?  this.configOptions.scopes.join(" ") : "openid profile email";
 
     const config = {
       response_type: "code",
@@ -78,13 +73,12 @@ export class GoogleProvider extends BaseProvider {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user info");
+        throw new Error("Failed to fetch user info from google");
       }
 
       const data = await response.json();
       return data as IGoogleProfile;
     } catch (error) {
-      console.error("Error fetching user info:", error);
       throw error;
     }
   }
@@ -119,7 +113,6 @@ export class GoogleProvider extends BaseProvider {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Error exchanging code for access token:", error);
       throw error;
     }
   }
@@ -136,19 +129,15 @@ export class GoogleProvider extends BaseProvider {
         throw new Error("Authorization code is missing");
       }
 
-      const data = await this.exchangeCodeForAccessToken<IGoogleData>(code as string);
+      const data: IGoogleData = await this.exchangeCodeForAccessToken(code as string);
+      const profile = await this.getUserInfo(data.access_token);
+      const validationInfo = await this.configOptions.verify(data, profile);
+      const user = this.validateInfo(validationInfo);
 
-      const userData = await this.getUserInfo(data.access_token);
+      await this.loginUser(req, res, user);
 
-      const profile: IGoogleProfile = userData;
-
-      const info = await this.configOptions.verify(data, profile);
-
-      const user = this.validateInfo(info);
-
-      res.status(200).json({ message: "authorize", user });
+      res.status(200).json({ message: "authorize" });
     } catch (error) {
-      console.error("Error handling redirect URI:", error);
       res.status(500).send(`Internal Server Error ${error}`);
       next(error);
     }

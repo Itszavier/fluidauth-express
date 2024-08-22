@@ -3,7 +3,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorName, FluidAuthError } from "../core/Error";
 import { CreateSessionFunction } from "..";
-import { DoneFunction } from "./types";
 
 /** @format */
 type BaseProviderConfig =
@@ -16,7 +15,7 @@ type BaseProviderConfig =
       name: string;
     };
 
-export interface IVerifyFunctionValidationData {
+export interface IValidationData {
   info?: Error | { message?: string; code?: number } | null;
   error?: Error | null;
   user?: Express.User | null;
@@ -24,27 +23,11 @@ export interface IVerifyFunctionValidationData {
 
 export class BaseProvider {
   config: BaseProviderConfig;
-  createSession!: CreateSessionFunction;
+  loginUser!: CreateSessionFunction;
 
   constructor(config: BaseProviderConfig) {
     this.config = config;
   }
-
-  done: DoneFunction = (err, user, info) => {
-    if (err) {
-      throw err;
-    }
-
-    if (!user) {
-      throw new FluidAuthError({
-        name: ErrorName.UnauthorizedError,
-        message: info?.message || "Unauthorized",
-        code: info?.code || 401,
-      });
-    }
-
-    return user;
-  };
 
   async handleRedirectUri(req: Request, res: Response, next: NextFunction) {
     console.warn(
@@ -53,7 +36,7 @@ export class BaseProvider {
     next();
   }
 
-  validateInfo(data: IVerifyFunctionValidationData): Express.User {
+  validateInfo(data: IValidationData): Express.User {
     if (!data.user && data.info) {
       if (data.info instanceof Error) {
         throw data.info;

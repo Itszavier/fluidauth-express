@@ -1,13 +1,11 @@
 /** @format */
 
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider } from "../base/BaseProvider";
+import { BaseProvider, IValidationData } from "../base/BaseProvider";
 import { ErrorName, FluidAuthError } from "../core/Error";
-import { CreateSessionFunction } from "..";
-import { DoneFunction } from "../base/types";
 
 interface ICredentialProviderConfig {
-  verify: (email: string, password: string, done: DoneFunction) => Promise<any>; // Use Promise for async operations
+  verify: (email: string, password: string) => Promise<IValidationData>; // Use Promise for async operations
 }
 
 export class CredentialProvider extends BaseProvider {
@@ -40,26 +38,11 @@ export class CredentialProvider extends BaseProvider {
     }
 
     try {
-      // Call the verify function with email, password, and done function
-      await this.credentialConfig.verify(email, password, async (err, user, info) => {
-        if (err) {
-          return next(err); // Pass the error to the next middleware
-        }
+      const validationInfo = await this.credentialConfig.verify(email, password);
+      const user = this.validateInfo(validationInfo);
 
-        if (!user) {
-          // Use info parameter to provide additional details
-          const message = info?.message || "[CredentialProvider]: Authentication failed";
-          return next(new Error(message));
-        }
-
-        // Attach the authenticated user to the request object
-        try {
-          await this.createSession(req, res, user);
-          return next();
-        } catch (error) {
-          next(error);
-        }
-      });
+      await this.loginUser(req, res, user);
+      
     } catch (error) {
       return next(error); // Pass any errors that occurred during verification
     }

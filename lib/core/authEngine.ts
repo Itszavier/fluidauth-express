@@ -40,7 +40,7 @@ export class AuthEngine {
 
   attachCreateSessionToSession() {
     this.providers.forEach((provider) => {
-      provider.createSession = this.createSession.bind(this);
+      provider.loginUser = this.createSession.bind(this);
     });
   }
 
