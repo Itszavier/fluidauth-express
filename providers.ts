@@ -26,7 +26,7 @@ export const googleProvider = new GoogleProvider({
   redirect_uri: "http://localhost:3000/redirect/google",
   scopes: ["openid", "profile", "email"],
 
-  async verify(data, profile, done) {
-    done(null, { id: 12, email: profile.email, name: profile?.name });
+  async verify(data, profile) {
+    return { user: { email: profile.email, name: profile.name } };
   },
 });

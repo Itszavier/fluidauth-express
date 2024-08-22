@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { BaseProvider } from "../base/BaseProvider";
-import { ErrorNames, FluidAuthError } from "../core/Error";
+import { ErrorName, FluidAuthError } from "../core/Error";
 import { CreateSessionFunction } from "..";
 import { DoneFunction } from "../base/types";
 
@@ -33,7 +33,7 @@ export class CredentialProvider extends BaseProvider {
     if (!this.credentialConfig) {
       return next(
         new FluidAuthError({
-          name: ErrorNames.BadRequestError,
+          name: ErrorName.BadRequestError,
           message: "config not specified",
         })
       );

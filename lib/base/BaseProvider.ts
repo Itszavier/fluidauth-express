@@ -1,7 +1,7 @@
 /** @format */
 
 import { Request, Response, NextFunction } from "express";
-import { ErrorNames, FluidAuthError } from "../core/Error";
+import { ErrorName, FluidAuthError } from "../core/Error";
 import { CreateSessionFunction } from "..";
 import { DoneFunction } from "./types";
 
@@ -15,6 +15,12 @@ type BaseProviderConfig =
       type: "OAuth2";
       name: string;
     };
+
+export interface IVerifyFunctionValidationData {
+  info?: Error | { message?: string; code?: number } | null;
+  error?: Error | null;
+  user?: Express.User | null;
+}
 
 export class BaseProvider {
   config: BaseProviderConfig;
@@ -31,7 +37,7 @@ export class BaseProvider {
 
     if (!user) {
       throw new FluidAuthError({
-        name: ErrorNames.UnauthorizedError,
+        name: ErrorName.UnauthorizedError,
         message: info?.message || "Unauthorized",
         code: info?.code || 401,
       });
@@ -45,6 +51,31 @@ export class BaseProvider {
       `${this.config.name} Provider redirect uri handler function not implemented`
     );
     next();
+  }
+
+  validateInfo(data: IVerifyFunctionValidationData): Express.User {
+    if (!data.user && data.info) {
+      if (data.info instanceof Error) {
+        throw data.info;
+      }
+
+      throw new FluidAuthError({
+        message: data.info.message || "Unauthorized",
+        code: data.info.code || 401,
+      });
+    }
+
+    if (data.error && data.error instanceof Error) {
+      throw data.error;
+    }
+
+    if (!data.user) {
+      throw new FluidAuthError({
+        message: "Unauthorized: Verify did not return a user",
+      });
+    }
+
+    return data.user;
   }
 
   // Example method to demonstrate type narrowing

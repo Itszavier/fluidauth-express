@@ -1,8 +1,8 @@
 /** @format */
 
-export enum ErrorNames {
-"BadRequestError" = "BadRequestError",
-"UnauthorizedError" = "UnauthorizedError",
+export enum ErrorName {
+  "BadRequestError" = "BadRequestError",
+  "UnauthorizedError" = "UnauthorizedError",
   "ProviderNotFoundError" = "ProviderNotFoundError",
   "MissingProviderNameError" = "MissingProviderNameError",
 }

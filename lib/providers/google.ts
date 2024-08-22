@@ -3,16 +3,18 @@ import querystring from "querystring";
 import utils from "util";
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider } from "../base/BaseProvider";
+import { BaseProvider, IVerifyFunctionValidationData } from "../base/BaseProvider";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { DoneFunction, VerifyAsyncReturnType } from "../base/types";
 import { FluidAuthError } from "../core/Error";
 
 export interface IGoogleProfile {
-  name?: string;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
   email: string;
   email_verified: boolean;
-  picture?: string;
 }
 
 export interface IGoogleData {
@@ -28,7 +30,10 @@ export interface IGoogleProviderConfig {
   client_secret: string;
   redirect_uri: string;
   scopes: string[];
-  verify: (data: IGoogleData, profile: IGoogleProfile, done: DoneFunction) => any;
+  verify: (
+    data: IGoogleData,
+    profile: IGoogleProfile
+  ) => Promise<IVerifyFunctionValidationData>;
 }
 
 export class GoogleProvider extends BaseProvider {
@@ -119,48 +124,11 @@ export class GoogleProvider extends BaseProvider {
     }
   }
 
-  private async verifyIdToken(idToken: string): Promise<JwtPayload> {
-    const googleKeysUrl = "https://www.googleapis.com/oauth2/v3/certs";
-
-    const response = await fetch(googleKeysUrl);
-    const keys = await response.json();
-
-    const decodedHeader = jwt.decode(idToken, { complete: true });
-    const kid = decodedHeader?.header?.kid;
-
-    const key = keys.keys.find((k: any) => k.kid === kid);
-
-    if (!key) {
-      throw new Error("Matching key not found");
-    }
-
-    const publicKey = `-----BEGIN CERTIFICATE-----\n${key.x5c[0]}\n-----END CERTIFICATE-----`;
-
-    const verifiedPayload = jwt.verify(idToken, publicKey, {
-      algorithms: ["RS256"],
-      audience: this.configOptions.client_id,
-      issuer: "https://accounts.google.com",
-    }) as JwtPayload;
-
-    if (Date.now() >= (verifiedPayload.exp || 0) * 1000) {
-      throw new Error("ID token has expired");
-    }
-
-    return verifiedPayload;
-  }
-
   async handleRedirectUri(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    const verifyAsync = utils
-      .promisify(this.configOptions.verify)
-      .bind(this.configOptions) as (
-      arg1: IGoogleData,
-      arg2: IGoogleProfile
-    ) => Promise<VerifyAsyncReturnType>;
-
     try {
       const { code, state } = req.query;
 
@@ -170,29 +138,18 @@ export class GoogleProvider extends BaseProvider {
 
       const data = await this.exchangeCodeForAccessToken<IGoogleData>(code as string);
 
-      if (!data.id_token) {
-        throw new Error("ID token is missing in the response");
-      }
+      const userData = await this.getUserInfo(data.access_token);
 
-      const payload = await this.verifyIdToken(data.id_token);
+      const profile: IGoogleProfile = userData;
 
-      const profile: IGoogleProfile = {
-        email: payload.email as string,
-        email_verified: payload.email_verified as boolean,
-        name: payload.name as string,
-        picture: payload.picture as string,
-      };
+      const info = await this.configOptions.verify(data, profile);
 
-      const { user, info } = await verifyAsync(data, profile);
+      const user = this.validateInfo(info);
 
-      if (!user) {
-        throw new FluidAuthError({ message: info?.message || "UnAuthorized" });
-      }
-
-      res.status(200).json({ message: "authorize", profile, payload });
+      res.status(200).json({ message: "authorize", user });
     } catch (error) {
       console.error("Error handling redirect URI:", error);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send(`Internal Server Error ${error}`);
       next(error);
     }
   }
