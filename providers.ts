@@ -41,6 +41,6 @@ export const googleProvider = new GoogleProvider({
 
     users.push(user);
 
-    return { user: user };
+    return { user };
   },
 });
