@@ -4,7 +4,7 @@ import { Response, Request, NextFunction, CookieOptions } from "express";
 import { BaseSessionStore, SessionData } from "../base/baseSessionStore";
 import crypto from "crypto";
 import { MemoryStore } from "./memoryStore";
-import { decrypt } from "../utils/dev";
+import { decrypt, encrypt } from "../utils/dev";
 
 export interface ISession {
   name: string;
@@ -57,8 +57,68 @@ export class Session {
    * @returns
    */
 
+  async createSession(req: Request, res: Response, userData: Express.User) {
+    const user = await this.serializeUser(userData);
+
+    const sessionData = {
+      sessionId: this.generateId(),
+      expires: this.sessionInfo.expires,
+      cookie: this.cookieOption,
+      user,
+    };
+
+    res.cookie(
+      this.sessionInfo.name,
+      encrypt(sessionData.sessionId, this.sessionInfo.secret),
+      this.cookieOption
+    );
+
+    res.on("finish", async () => {
+      try {
+        await this.store.create({
+          expires: sessionData.expires,
+          sessionId: sessionData.sessionId,
+          user: sessionData.user,
+        });
+      } catch (error) {
+        console.error("Failed to store session:", error);
+      }
+    });
+
+    req.session = {
+      name: this.sessionInfo.name,
+      user: sessionData.user,
+      expires: sessionData.expires,
+    };
+
+    req.user = await this.deserializeUser(sessionData.user);
+  }
+
+  clearData(req: Request, res: Response) {
+    const session = req.cookies[this.sessionInfo.name];
+
+    if (session) {
+      res.clearCookie(this.sessionInfo.name);
+    }
+
+    req.session.user = null;
+  }
+
+  destroy(req: Request, res: Response) {
+    const session = req.cookies[this.sessionInfo.name];
+
+    if (session) {
+      res.clearCookie(this.sessionInfo.name);
+    }
+
+    req.session = null;
+  }
+
   async manageSession(req: Request, res: Response, next: NextFunction) {
     const session = req.cookies[this.sessionInfo.name];
+
+    req.session.create = this.createSession.bind(this);
+    req.session.clearData = this.clearData.bind(this);
 
     if (!session) {
       return next();
@@ -67,11 +127,9 @@ export class Session {
     const sessionId = await decrypt(session, this.sessionInfo.secret);
 
     try {
-   
       const sessionData = await this.store.get(sessionId);
 
       if (!sessionData) {
-       
         res.clearCookie(this.sessionInfo.name);
         return next();
       }
@@ -85,7 +143,6 @@ export class Session {
       req.session = sessionData;
       next();
       req.user = await this.deserializeUser(sessionData.user);
-    
     } catch (error) {
       next(error);
       res.clearCookie(this.sessionInfo.name);

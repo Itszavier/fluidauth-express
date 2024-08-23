@@ -35,12 +35,12 @@ export class AuthEngine {
     this._session = new Session(session);
     this.providers = providers;
     console.log(this._session.sessionInfo);
-    this.attachCreateSessionToSession();
+    this.attachCreateSessionToProvider();
   }
 
-  attachCreateSessionToSession() {
+  attachCreateSessionToProvider() {
     this.providers.forEach((provider) => {
-      provider.loginUser = this.createSession.bind(this);
+      provider.loginUser = this._session.createSession.bind(this._session);
     });
   }
 
@@ -84,43 +84,6 @@ export class AuthEngine {
     }
 
     return provider.handleRedirectUri.bind(provider);
-  }
-
-  async createSession(req: Request, res: Response, userData: Express.User) {
-    const user = await this._session.serializeUser(userData);
-
-    const sessionData = {
-      sessionId: this._session.generateId(),
-      expires: this._session.sessionInfo.expires,
-      cookie: this._session.cookieOption,
-      user,
-    };
-
-    res.cookie(
-      this._session.sessionInfo.name,
-      encrypt(sessionData.sessionId, this._session.sessionInfo.secret),
-      this._session.cookieOption
-    );
-
-    res.on("finish", async () => {
-      try {
-        await this._session.store.create({
-          expires: sessionData.expires,
-          sessionId: sessionData.sessionId,
-          user: sessionData.user,
-        });
-      } catch (error) {
-        console.error("Failed to store session:", error);
-      }
-    });
-
-    req.session = {
-      name: this._session.sessionInfo.name,
-      user: sessionData.user,
-      expires: sessionData.expires,
-    };
-
-    req.user = await this._session.deserializeUser(sessionData.user);
   }
 
   serializeUser(callback: (user: any) => any) {
