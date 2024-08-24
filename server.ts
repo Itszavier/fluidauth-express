@@ -4,6 +4,7 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth";
 import pagesRoutes from "./routes/pages";
+
 import authEngine from "./config/authEngine";
 const app = express();
 
@@ -18,6 +19,10 @@ app.use(express.static(path.resolve(__dirname, "public")));
 
 // auth middleware
 app.use(authEngine.session());
+
+app.use(function (req, res, next) {
+  next();
+});
 
 // routes
 app.use(authRoutes);

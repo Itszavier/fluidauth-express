@@ -17,17 +17,14 @@ export class CredentialProvider extends BaseProvider {
   }
 
   async authenticate(req: Request, res: Response, next: NextFunction) {
-    const { email, password }: { email: string; password: string } =
-      req.body || {};
+    const { email, password }: { email: string; password: string } = req.body || {};
 
     console.log("Email", email, "password", password);
 
     // Check for missing credentials
     if (!email || !password) {
       const missingField = !email ? "email" : "password";
-      return next(
-        new Error(`[CredentialProvider]: ${missingField} is required`)
-      );
+      return next(new Error(`[CredentialProvider]: ${missingField} is required`));
     }
 
     // Ensure credentialConfig is defined
@@ -41,13 +38,10 @@ export class CredentialProvider extends BaseProvider {
     }
 
     try {
-      const validationInfo = await this.credentialConfig.verify(
-        email,
-        password
-      );
+      const validationInfo = await this.credentialConfig.verify(email, password);
       const user = this.validateInfo(validationInfo);
 
-      await this.loginUser(req, res, user);
+      await req.session.create(user);
 
       next();
     } catch (error) {

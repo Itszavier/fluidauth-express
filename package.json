@@ -1,14 +1,40 @@
 {
-  "name": "auth",
-  "version": "1.0.0",
+  "name": "@fluidauth/express",
+  "version": "1.0.0-alpha.3",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./base/": {
+      "require": "./dist/base/index.js",
+      "import": "./dist/base/index.mjs",
+      "types": "./dist/base/index.d.ts"
+    },
+    "./core/": {
+      "require": "./dist/core/index.js",
+      "import": "./dist/core/index.mjs",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./providers/": {
+      "require": "./dist/providers/index.js",
+      "import": "./dist/providers/index.mjs",
+      "types": "./dist/providers/index.d.ts"
+    }
+  },
   "directories": {
     "lib": "lib"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --watch ./server.ts --ext ts --exec tsx ./server.ts"
+    "start": "nodemon --watch ./server.ts --ext ts --exec tsx ./server.ts",
+    "build": "tsup",
+    "publish": "npm publish --access=public --scope=@fluidauth --tag alpha"
   },
   "author": "",
   "license": "ISC",
@@ -18,16 +44,14 @@
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
-    "tsx": "^4.17.0"
+    "nodemon": "^3.1.4",
+    "tsup": "^8.2.4",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@types/express": "^4.17.21",
-    "cryptr": "^6.3.0",
     "express": "^4.19.2",
-    "iocane": "^5.2.0",
-    "jsonwebtoken": "^9.0.2",
-    "node-encryption": "^2.0.1",
-    "nodemon": "^3.1.4",
-    "string-crypto": "^3.0.2"
+    "jsonwebtoken": "^9.0.2"
   }
 }

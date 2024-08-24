@@ -6,47 +6,51 @@ import crypto from "crypto";
 import { MemoryStore } from "./memoryStore";
 import { decrypt, encrypt } from "../utils/dev";
 
-export interface ISession {
-  name: string;
-  expires: Date;
-  user: string | Express.User;
-  [key: string]: any;
-}
+import {
+  DeserializeUserFunction,
+  ISessionData,
+  SerializeUserFunction,
+} from "../base/types";
 
 export interface ISessionConfig {
   name?: string;
   secret: string;
+  sessionDuration?: number;
   cookie?: CookieOptions;
   store?: BaseSessionStore;
 }
-
-export type SerializeUserFunction = (user: Express.User) => any;
-
-export type DeserializeUserFunction = (id: string) => any;
 
 export class Session {
   sessionInfo: { name: string; secret: string; expires: Date };
   cookieOption: CookieOptions;
   store: BaseSessionStore;
+  private sessionDuration: number;
+
+  request!: Request;
+  response!: Response;
+
   public serializeUser!: SerializeUserFunction;
   public deserializeUser!: DeserializeUserFunction;
 
   constructor(config: ISessionConfig) {
-    this.cookieOption = config.cookie || {};
+    this.sessionDuration = config.sessionDuration || 30 * 60 * 1000; // 30 min by default
+
+    this.cookieOption = {
+      maxAge: this.sessionDuration,
+      ...config.cookie,
+    };
 
     this.sessionInfo = {
       name: config.name || "fluid-auth-session",
       secret: config.secret,
-      expires: config.cookie?.expires || this.getOneWeekFromNow(),
+      expires: this.getExpirationDate(),
     };
 
     this.store = config.store || new MemoryStore();
   }
 
-  private getOneWeekFromNow(): Date {
-    const now = new Date();
-    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Add 7 days
-    return oneWeekFromNow;
+  getExpirationDate() {
+    return new Date(Date.now() + this.sessionDuration);
   }
 
   /**
@@ -57,104 +61,110 @@ export class Session {
    * @returns
    */
 
-  async createSession(req: Request, res: Response, userData: Express.User) {
-    const user = await this.serializeUser(userData);
+  async createSession(userData: Express.User) {
+    this.ensureRequestIsPresent();
 
-    const sessionData = {
+    const userId = await this.serializeUser(userData);
+
+    const sessionData: ISessionData = {
       sessionId: this.generateId(),
-      expires: this.sessionInfo.expires,
-      cookie: this.cookieOption,
-      user,
+      expires: this.getExpirationDate(),
+      userId: userId,
     };
 
-    res.cookie(
+    this.response.cookie(
       this.sessionInfo.name,
       encrypt(sessionData.sessionId, this.sessionInfo.secret),
       this.cookieOption
     );
 
-    res.on("finish", async () => {
-      try {
-        await this.store.create({
-          expires: sessionData.expires,
-          sessionId: sessionData.sessionId,
-          user: sessionData.user,
-        });
-      } catch (error) {
-        console.error("Failed to store session:", error);
+    await this.store.create(sessionData);
+
+    this.request.session.cookie = this.cookieOption;
+
+    this.request.session.user = await this.deserializeUser(sessionData.userId);
+
+    this.request.user = this.request.session.user as Express.User;
+  }
+
+  async destroySession() {
+    this.ensureRequestIsPresent();
+
+    try {
+      const session = this.request.cookies[this.sessionInfo.name];
+
+      if (!session) {
+        return;
       }
-    });
 
-    req.session = {
-      name: this.sessionInfo.name,
-      user: sessionData.user,
-      expires: sessionData.expires,
-    };
+      const sessionId = decrypt(session, this.sessionInfo.secret);
 
-    req.user = await this.deserializeUser(sessionData.user);
-  }
+      await this.store.delete(sessionId);
 
-  clearData(req: Request, res: Response) {
-    const session = req.cookies[this.sessionInfo.name];
-
-    if (session) {
-      res.clearCookie(this.sessionInfo.name);
+      this.response.clearCookie(this.sessionInfo.name);
+      
+      this.request.session.user = null;
+      this.request.session.cookie = null;
+    } catch (error) {
+      throw error;
     }
-
-    req.session.user = null;
-  }
-
-  destroy(req: Request, res: Response) {
-    const session = req.cookies[this.sessionInfo.name];
-
-    if (session) {
-      res.clearCookie(this.sessionInfo.name);
-    }
-
-    req.session = null;
   }
 
   async manageSession(req: Request, res: Response, next: NextFunction) {
+    // Initialize req.session if not already set
+    req.session = {
+      ...req.session, // Preserve any existing session data
+      create: this.createSession.bind(this),
+      destroy: this.destroySession.bind(this),
+    };
+
+    this.request = req;
+    this.response = res;
+
     const session = req.cookies[this.sessionInfo.name];
 
-    req.session.create = this.createSession.bind(this);
-    req.session.clearData = this.clearData.bind(this);
+    if (!session) return next();
 
-    if (!session) {
-      return next();
-    }
-
-    const sessionId = await decrypt(session, this.sessionInfo.secret);
+    const sessionId = decrypt(session, this.sessionInfo.secret);
 
     try {
       const sessionData = await this.store.get(sessionId);
 
       if (!sessionData) {
-        res.clearCookie(this.sessionInfo.name);
+        this.destroySession();
         return next();
       }
 
       if (new Date(sessionData.expires).getTime() <= Date.now()) {
         console.log(`[Debug]: Session expired, clearing session cookie`);
-        res.clearCookie(this.sessionInfo.name);
+        await this.destroySession();
         return next();
       }
 
-      req.session = sessionData;
+      req.session.cookie = this.cookieOption;
+      req.session.user = await this.deserializeUser(sessionData.userId);
+      req.user = req.session.user as Express.User;
+
       next();
-      req.user = await this.deserializeUser(sessionData.user);
     } catch (error) {
+      await this.destroySession();
       next(error);
-      res.clearCookie(this.sessionInfo.name);
     }
   }
 
   generateId(): string {
     return crypto.randomBytes(18).toString("hex");
   }
+
+  private ensureRequestIsPresent() {
+    if (!this.request || !this.response) {
+      throw new Error("Request and Response objects are not set.");
+    }
+  }
 }
 
 export default function session(config: ISessionConfig) {
   const session = new Session(config);
-  return session.manageSession;
+
+  return session.manageSession.bind(session);
 }

@@ -1,4 +1,15 @@
 node_modules
 .env
+lib
 server.ts
+providers.ts
+mock.ts
 tsconfig.json
+config
+pages
+routes
+public
+.gitignore
+.npmignore
+tsconfig.json
+tsup.config

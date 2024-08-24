@@ -8,12 +8,13 @@ dotenv.config();
 
 export const credentialProvider = new CredentialProvider({
   async verify(email, password) {
+    
     const user = users.find(
       (userData) => userData.email === email && userData.password === password
     );
 
     if (!user) {
-      //done(null, false, { message: "User not found" });
+      return { user: null, info: { message: "user not found" } };
     }
 
     return { user };
