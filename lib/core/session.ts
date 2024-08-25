@@ -1,11 +1,10 @@
 /** @format */
 
 import { Response, Request, NextFunction, CookieOptions } from "express";
-import { BaseSessionStore, SessionData } from "../base/baseSessionStore";
 import crypto from "crypto";
-import { MemoryStore } from "./memoryStore";
+import { BaseSessionStore } from "../base/baseSessionStore";
+import { MemoryStore } from "./memoryStore"; // Example store
 import { decrypt, encrypt } from "../utils/dev";
-
 import {
   DeserializeUserFunction,
   ISessionData,
@@ -21,22 +20,24 @@ export interface ISessionConfig {
 }
 
 export class Session {
-  sessionInfo: { name: string; secret: string; expires: Date };
-  cookieOption: CookieOptions;
-  store: BaseSessionStore;
-  private sessionDuration: number;
-
-  request!: Request;
-  response!: Response;
+  private readonly sessionInfo: { name: string; secret: string; expires: Date };
+  private readonly cookieOption: CookieOptions;
+  private readonly store: BaseSessionStore;
+  private readonly sessionDuration: number;
 
   public serializeUser!: SerializeUserFunction;
   public deserializeUser!: DeserializeUserFunction;
 
   constructor(config: ISessionConfig) {
-    this.sessionDuration = config.sessionDuration || 30 * 60 * 1000; // 30 min by default
+    this.validateConfig(config);
+
+    this.sessionDuration = config.sessionDuration || 30 * 60 * 1000; // Default: 30 minutes
 
     this.cookieOption = {
       maxAge: this.sessionDuration,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Secure flag in production
+      sameSite: "strict", // CSRF protection
       ...config.cookie,
     };
 
@@ -46,125 +47,116 @@ export class Session {
       expires: this.getExpirationDate(),
     };
 
-    this.store = config.store || new MemoryStore();
+    this.store = config.store || new MemoryStore(); // Default to in-memory store
   }
 
-  getExpirationDate() {
-    return new Date(Date.now() + this.sessionDuration);
-  }
-
-  /**
-   * manage the session on every request
-   * @param req
-   * @param res
-   * @param next
-   * @returns
-   */
-
-  async createSession(userData: Express.User) {
-    this.ensureRequestIsPresent();
-
-    const userId = await this.serializeUser(userData);
-
-    const sessionData: ISessionData = {
-      sessionId: this.generateId(),
-      expires: this.getExpirationDate(),
-      userId: userId,
-    };
-
-    this.response.cookie(
-      this.sessionInfo.name,
-      encrypt(sessionData.sessionId, this.sessionInfo.secret),
-      this.cookieOption
-    );
-
-    await this.store.create(sessionData);
-
-    this.request.session.cookie = this.cookieOption;
-
-    this.request.session.user = await this.deserializeUser(sessionData.userId);
-
-    this.request.user = this.request.session.user as Express.User;
-  }
-
-  async destroySession() {
-    this.ensureRequestIsPresent();
-
-    try {
-      const session = this.request.cookies[this.sessionInfo.name];
-
-      if (!session) {
-        return;
-      }
-
-      const sessionId = decrypt(session, this.sessionInfo.secret);
-
-      await this.store.delete(sessionId);
-
-      this.response.clearCookie(this.sessionInfo.name);
-      
-      this.request.session.user = null;
-      this.request.session.cookie = null;
-    } catch (error) {
-      throw error;
+  private validateConfig(config: ISessionConfig): void {
+    if (!config.secret) {
+      throw new Error("Session secret is required for encryption and decryption.");
+    }
+    if (config.sessionDuration && config.sessionDuration <= 0) {
+      throw new Error("Session duration must be a positive number.");
     }
   }
 
-  async manageSession(req: Request, res: Response, next: NextFunction) {
-    // Initialize req.session if not already set
-    req.session = {
-      ...req.session, // Preserve any existing session data
-      create: this.createSession.bind(this),
-      destroy: this.destroySession.bind(this),
-    };
+  private getExpirationDate(): Date {
+    return new Date(Date.now() + this.sessionDuration);
+  }
 
-    this.request = req;
-    this.response = res;
+  public async manageSession(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
 
-    const session = req.cookies[this.sessionInfo.name];
+    const sessionCookie = req.cookies[this.sessionInfo.name];
 
-    if (!session) return next();
-
-    const sessionId = decrypt(session, this.sessionInfo.secret);
+    if (!sessionCookie) {
+      return next();
+    }
 
     try {
+      const sessionId = this.decryptSessionId(sessionCookie);
       const sessionData = await this.store.get(sessionId);
 
-      if (!sessionData) {
-        this.destroySession();
+      if (sessionData === null || this.isSessionExpired(sessionData)) {
+        await this.destroySession(req, res);
         return next();
       }
 
-      if (new Date(sessionData.expires).getTime() <= Date.now()) {
-        console.log(`[Debug]: Session expired, clearing session cookie`);
-        await this.destroySession();
-        return next();
-      }
-
-      req.session.cookie = this.cookieOption;
       req.session.user = await this.deserializeUser(sessionData.userId);
       req.user = req.session.user as Express.User;
 
       next();
     } catch (error) {
-      await this.destroySession();
+      await this.destroySession(req, res);
       next(error);
     }
   }
 
-  generateId(): string {
-    return crypto.randomBytes(18).toString("hex");
+  private isSessionExpired(sessionData: ISessionData): boolean {
+    return new Date(sessionData.expires).getTime() <= Date.now();
   }
 
-  private ensureRequestIsPresent() {
-    if (!this.request || !this.response) {
-      throw new Error("Request and Response objects are not set.");
+  private decryptSessionId(sessionCookie: string): string {
+    try {
+      return decrypt(sessionCookie, this.sessionInfo.secret);
+    } catch {
+      throw new Error("Invalid session ID.");
     }
   }
-}
 
-export default function session(config: ISessionConfig) {
-  const session = new Session(config);
+  public async createSession(
+    req: Request,
+    res: Response,
+    userData: Express.User
+  ): Promise<void> {
+    try {
+      const userId = await this.serializeUser(userData);
 
-  return session.manageSession.bind(session);
+      const sessionData: ISessionData = {
+        sessionId: this.generateId(),
+        expires: this.getExpirationDate(),
+        userId: userId,
+      };
+
+      await this.store.create(sessionData);
+
+      res.cookie(
+        this.sessionInfo.name,
+        encrypt(sessionData.sessionId, this.sessionInfo.secret),
+        this.cookieOption
+      );
+
+      req.session.user = await this.deserializeUser(sessionData.userId);
+      req.user = req.session.user as Express.User;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async destroySession(req: Request, res: Response): Promise<void> {
+    if (res.headersSent) {
+      return;
+    }
+
+    const sessionCookie = req.cookies[this.sessionInfo.name];
+
+    if (!sessionCookie) {
+      return;
+    }
+
+    try {
+      const sessionId = this.decryptSessionId(sessionCookie);
+      await this.store.delete(sessionId);
+      res.clearCookie(this.sessionInfo.name);
+      req.session.user = null;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private generateId(): string {
+    return crypto.randomBytes(18).toString("hex");
+  }
 }

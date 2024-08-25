@@ -3,12 +3,6 @@
 import { ISessionData } from "./types";
 
 /** @format */
-export interface SessionData {
-  sessionId: string;
-  user: string;
-  expires: Date;
-}
-
 export abstract class BaseSessionStore {
   abstract db: unknown;
 
@@ -35,7 +29,9 @@ export abstract class BaseSessionStore {
    * @param {string} sessionId - The ID of the session to retrieve.
    * @returns {Promise<ISessionData | null> | (ISessionData | null)} A promise that resolves with the session data or `null` if not found, or the data directly if synchronous.
    */
-  abstract get(sessionId: string): Promise<ISessionData | null> | (ISessionData | null);
+  abstract get(
+    sessionId: string
+  ): Promise<ISessionData | null> | (ISessionData | null);
 
   /**
    * Cleans up old or unused data.

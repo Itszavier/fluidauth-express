@@ -5,7 +5,7 @@ import { BaseProvider, IValidationData } from "../base/BaseProvider";
 import { ErrorName, FluidAuthError } from "../core/Error";
 
 interface ICredentialProviderConfig {
-  verify: (email: string, password: string) => Promise<IValidationData>; // Use Promise for async operations
+  verifyUser: (email: string, password: string) => Promise<IValidationData>; // Use Promise for async operations
 }
 
 export class CredentialProvider extends BaseProvider {
@@ -38,7 +38,7 @@ export class CredentialProvider extends BaseProvider {
     }
 
     try {
-      const validationInfo = await this.credentialConfig.verify(email, password);
+      const validationInfo = await this.credentialConfig.verifyUser(email, password);
       const user = this.validateInfo(validationInfo);
 
       await req.session.create(user);

@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { ErrorName, FluidAuthError } from "../core/Error";
-import { CreateSessionFunction } from "..";
+
 
 /** @format */
 type BaseProviderConfig =
@@ -23,7 +23,7 @@ export interface IValidationData {
 
 export class BaseProvider {
   config: BaseProviderConfig;
-  loginUser!: CreateSessionFunction;
+
 
   constructor(config: BaseProviderConfig) {
     this.config = config;

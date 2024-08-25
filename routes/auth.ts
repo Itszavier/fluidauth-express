@@ -23,7 +23,8 @@ router.get("/session", function (req, res, next) {
 });
 
 router.get("/logout", async function (req, res, next) {
- 
+  req.logout();
+  res.json({ user: req.user || null, u: req.user });
 });
 
 router.get("/login/google", authEngine.authenticate("google"));

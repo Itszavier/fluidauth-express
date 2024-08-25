@@ -1,6 +1,6 @@
 /** @format */
-import querystring from "querystring";
 
+import querystring from "querystring";
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { BaseProvider, IValidationData } from "../base/BaseProvider";
@@ -23,11 +23,17 @@ export interface IGoogleData {
 }
 
 export interface IGoogleProviderConfig {
-  client_id: string;
-  client_secret: string;
-  redirect_uri: string;
-  scopes?: string[];
-  verify: (data: IGoogleData, profile: IGoogleProfile) => Promise<IValidationData>;
+  credentials: {
+    redirectUri: string;
+    clientId: string;
+    clientSecret: string;
+    scopes?: string[];
+  };
+
+  verifyUser: (
+    GoogleAuthData: IGoogleData,
+    Profile: IGoogleProfile
+  ) => Promise<IValidationData>;
 }
 
 export class GoogleProvider extends BaseProvider {
@@ -44,14 +50,16 @@ export class GoogleProvider extends BaseProvider {
 
   authenticate(req: Request, res: Response): void {
     const state = crypto.randomBytes(8).toString("hex");
-    
-    const scopes = this.configOptions.scopes ?  this.configOptions.scopes.join(" ") : "openid profile email";
+
+    const scopes = this.configOptions.credentials.scopes
+      ? this.configOptions.credentials.scopes.join(" ")
+      : "openid profile email";
 
     const config = {
       response_type: "code",
-      client_id: this.configOptions.client_id,
+      client_id: this.configOptions.credentials.clientId,
       scope: scopes,
-      redirect_uri: this.configOptions.redirect_uri,
+      redirect_uri: this.configOptions.credentials.redirectUri,
       state: state,
     };
 
@@ -73,7 +81,7 @@ export class GoogleProvider extends BaseProvider {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user info from google");
+        throw new Error("Failed to fetch user info from Google");
       }
 
       const data = await response.json();
@@ -83,14 +91,14 @@ export class GoogleProvider extends BaseProvider {
     }
   }
 
-  private async exchangeCodeForAccessToken<T extends object>(code: string): Promise<T> {
+  private async exchangeCodeForAccessToken(code: string): Promise<IGoogleData> {
     const api_url = "https://oauth2.googleapis.com/token";
 
     const params = new URLSearchParams({
       code: code,
-      client_id: this.configOptions.client_id,
-      client_secret: this.configOptions.client_secret,
-      redirect_uri: this.configOptions.redirect_uri,
+      client_id: this.configOptions.credentials.clientId,
+      client_secret: this.configOptions.credentials.clientSecret,
+      redirect_uri: this.configOptions.credentials.redirectUri,
       grant_type: "authorization_code",
     });
 
@@ -111,7 +119,7 @@ export class GoogleProvider extends BaseProvider {
       }
 
       const data = await response.json();
-      return data;
+      return data as IGoogleData;
     } catch (error) {
       throw error;
     }
@@ -123,7 +131,7 @@ export class GoogleProvider extends BaseProvider {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { code, state } = req.query;
+      const { code } = req.query;
 
       if (!code) {
         throw new Error("Authorization code is missing");
@@ -131,14 +139,14 @@ export class GoogleProvider extends BaseProvider {
 
       const data: IGoogleData = await this.exchangeCodeForAccessToken(code as string);
       const profile = await this.getUserInfo(data.access_token);
-      const validationInfo = await this.configOptions.verify(data, profile);
+      const validationInfo = await this.configOptions.verifyUser(data, profile);
       const user = this.validateInfo(validationInfo);
 
-      await this.loginUser(req, res, user);
+      req.login(req, res, user);
 
-      res.status(200).json({ message: "authorize" });
+      res.status(200).json({ message: "Authorized" });
     } catch (error) {
-      res.status(500).send(`Internal Server Error ${error}`);
+      console.error(error);
       next(error);
     }
   }
