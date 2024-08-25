@@ -19,15 +19,11 @@ export class CredentialProvider extends BaseProvider {
   async authenticate(req: Request, res: Response, next: NextFunction) {
     const { email, password }: { email: string; password: string } = req.body || {};
 
-    console.log("Email", email, "password", password);
-
-    // Check for missing credentials
     if (!email || !password) {
       const missingField = !email ? "email" : "password";
       return next(new Error(`[CredentialProvider]: ${missingField} is required`));
     }
 
-    // Ensure credentialConfig is defined
     if (!this.credentialConfig) {
       return next(
         new FluidAuthError({

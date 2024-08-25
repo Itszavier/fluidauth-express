@@ -68,7 +68,7 @@ export class AuthService {
     this._session.serializeUser = callback;
   }
 
-  public deserializeUser(callback: (id: string) => Express.User | null) {
+  public deserializeUser(callback: (id: string) => Promise<Express.User | null>) {
     if (typeof callback !== "function") {
       throw new Error("[FluidAuth]: deserializeUser callback must be a function.");
     }
@@ -81,53 +81,24 @@ export class AuthService {
 
   public initialize() {
     return (req: Request, res: Response, next: NextFunction) => {
-      req.login = async (
-        request: Request,
-        response: Response,
-        userData: Express.User
-      ) => {
-        await this._session.createSession(req, res, userData);
+      req.login = async (user) => {
+        if (!req.session) {
+          return;
+        }
+        await req.session.create(user);
       };
 
-      
       req.logout = async () => {
-        await this._session.destroySession(req, res);
+        if (!req.session) {
+          return;
+        }
+
+        await req.session.destroy();
       };
+
       req.isAuthenticated = () => !!req.session.user;
 
       next();
     };
-  }
-}
-
-export async function login(
-  req: Request,
-  res: Response,
-  userData: Express.User
-): Promise<void> {
-  try {
-    if (req.session && res) {
-      await req.session.create(userData);
-    } else {
-      throw new FluidAuthError({ message: "session not found" });
-    }
-  } catch (error) {
-    throw error;
-  }
-}
-
-export function isAuthenticated(req: Request): boolean {
-  return !!req.session?.user;
-}
-
-export async function logout(req: Request, res: Response): Promise<void> {
-  try {
-    if (req.session && res) {
-      await req.session.destroy();
-    } else {
-      throw new FluidAuthError({ message: "session not found" });
-    }
-  } catch (error) {
-    throw error;
   }
 }

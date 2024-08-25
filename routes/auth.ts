@@ -5,12 +5,8 @@ import authEngine from "../config/authEngine";
 import { users } from "../mock";
 const router = Router();
 
-router.post("/login", authEngine.authenticate("credential"), function (req, res, next) {
-  res.status(200).json({
-    message: "successfully logged in",
-    user: req.user || null,
-    session: req.session || null,
-  });
+router.post("/login", authEngine.authenticate("credential"), function (req, res) {
+  res.status(200).redirect("/dashboard");
 });
 
 router.use(function (req, res, next) {
@@ -22,12 +18,13 @@ router.get("/session", function (req, res, next) {
   res.status(200).json({ session: req.session || null, user: req.user || null });
 });
 
-router.get("/logout", async function (req, res, next) {
-  req.logout();
-  res.json({ user: req.user || null, u: req.user });
-});
+router.get("/login/google", authEngine.authenticate("google"), function (req, res, next) {
+  if (req.user) {
+    console.log("user detected");
+  }
 
-router.get("/login/google", authEngine.authenticate("google"));
+  res.status(200).redirect("/dashboard");
+});
 
 router.get("/redirect/google", authEngine.handleCallback("google"));
 

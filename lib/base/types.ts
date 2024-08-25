@@ -9,17 +9,17 @@ export interface ErrorInfo {
 
 export type SerializeUserFunction = (user: Express.User) => any;
 
-export type DeserializeUserFunction = (id: string) => Express.User | null;
+export type DeserializeUserFunction = (id: string) => Promise<Express.User | null>;
 
 /**
  * Interface for managing session data and operations.
  * Uses a generic to allow dynamic typing and inference of additional properties.
  */
 export interface ISession {
-  create: (userData: Express.User) => Promise<void> | void;
+  create: (userData: any) => Promise<void> | void;
   destroy: () => Promise<void> | void;
-  user?: Express.User | null;
-  cookie?: CookieOptions | null;
+  user: Express.User | null;
+  cookie: CookieOptions | null;
   [key: string]: any;
 }
 
@@ -40,11 +40,7 @@ declare global {
        * Skips the verification process and creates a session for the user.
        * @param userData - The user data from the database.
        */
-      login: (
-        request: any,
-        response: any,
-        userData:any
-      ) => Promise<void>;
+      login: (userData: any) => Promise<void>;
 
       /**
        * Log out the user by destroying the session.
@@ -60,6 +56,7 @@ declare global {
     }
 
     interface User {
+      [key: string]: any;
       // Add any additional properties for the user object if needed
     }
   }

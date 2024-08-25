@@ -2,21 +2,12 @@
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fluid Auth</title>
-    <link rel="stylesheet" href="/css/styles.css" />
-  </head>
+  <%- include('layout/header') %>
 
   <body>
-    <div class="nav">
-      <h3>FluidAuth</h3>
-      <a href="/">home</a>
-      <a href="/dashboard">dashboard</a>
-      <a href="/login/google">google login</a>
-    </div>
-    <div class="login">
+    <%- include('layout/navbar') %>
+
+    <div class="page">
       <h1>Login Page</h1>
       <p>The ultimate easy authencation package</p>
 

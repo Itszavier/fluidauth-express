@@ -1,6 +1,6 @@
 /** @format */
 
-import { Response, Request, NextFunction, CookieOptions } from "express";
+import { Response, Request, NextFunction, CookieOptions, response } from "express";
 import crypto from "crypto";
 import { BaseSessionStore } from "../base/baseSessionStore";
 import { MemoryStore } from "./memoryStore"; // Example store
@@ -68,6 +68,7 @@ export class Session {
     res: Response,
     next: NextFunction
   ): Promise<void> {
+    this.init(req, res);
 
     const sessionCookie = req.cookies[this.sessionInfo.name];
 
@@ -94,6 +95,15 @@ export class Session {
     }
   }
 
+  private init(req: Request, res: Response) {
+    req.session = {
+      user: null,
+      cookie: null,
+      create: this.createSession.bind(this, req, res),
+      destroy: this.destroySession.bind(this, req, res),
+    };
+  }
+
   private isSessionExpired(sessionData: ISessionData): boolean {
     return new Date(sessionData.expires).getTime() <= Date.now();
   }
@@ -112,7 +122,11 @@ export class Session {
     userData: Express.User
   ): Promise<void> {
     try {
+      console.log("user data from session create", userData);
+      
       const userId = await this.serializeUser(userData);
+
+      console.log("userId from serlize function", userId);
 
       const sessionData: ISessionData = {
         sessionId: this.generateId(),

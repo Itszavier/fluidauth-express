@@ -1,0 +1,33 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('layout/header') %>
+
+  <body>
+    <%- include('layout/navbar') %>
+
+    <div class="page">
+      <h1>Logout Page</h1>
+      <p>The ultimate easy authencation package</p>
+
+      <form action="/logout" method="post">
+        <button type="submit">logout</button>
+        <pre id="account" class="json-container"></pre>
+      </form>
+    </div>
+
+    <script>
+      fetch("/session", { method: "GET", credentials: "include" })
+        .then(async (res) => {
+          const data = await res.json();
+
+          const elem = document.getElementById("account");
+          elem.innerHTML = prettyPrintJson.toHtml(data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    </script>
+  </body>
+</html>

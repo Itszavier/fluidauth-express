@@ -19,21 +19,25 @@ const authService = new AuthService({
       async verifyUser(GoogleAuthData, Profile) {
         const user = users.find((dbUser) => dbUser.email === Profile.email);
 
-        if (user) return { user };
+        if (user) {
+          return { user };
+        }
 
+        // Generate a random ID
         const randomId = (Math.floor(Math.random() * (100 - 20 + 1)) + 20).toString();
 
-        users.push({
+        // Create a new user
+        const newUser = {
           id: randomId,
           email: Profile.email,
           name: Profile.name,
-          password: "deferferfreffer",
-        });
+          password: "hashed_password", // Replace with hashed password
+        };
 
-        // gets the last element which is the new user that was added to the end
-        const createdUser = users.pop();
+        // Add the new user to the users array
+        users.push(newUser);
 
-        return { user: createdUser };
+        return { user: newUser };
       },
     }),
 
@@ -53,7 +57,7 @@ authService.serializeUser(function (user) {
   return user.id;
 });
 
-authService.deserializeUser(function (id) {
+authService.deserializeUser(async function (id) {
   const user = users.find((user) => user.id === id) || null;
   if (!user) console.log("[deserializeUser]: user not found");
   return user;

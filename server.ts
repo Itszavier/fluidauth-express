@@ -15,7 +15,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+app.set("view engine", "ejs");
+app.set("views", "./views");
 app.use(express.static(path.resolve(__dirname, "public")));
 
 // auth middleware
@@ -24,7 +25,6 @@ app.use(authEngine.session());
 app.use(authEngine.initialize());
 
 app.use(function (req, res, next) {
-  
   next();
 });
 
