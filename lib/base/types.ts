@@ -56,8 +56,7 @@ declare global {
     }
 
     interface User {
-      [key: string]: any;
-      // Add any additional properties for the user object if needed
+    
     }
   }
 }
