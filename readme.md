@@ -6,11 +6,13 @@ fluidauth-express makes adding authentication to your Express app easy. Follow t
 
 ## Key Points
 
-**Experimental Session Management**: The session management feature in FluidAuth is still in beta. It is actively being developed and might change, so please keep this in mind as you integrate it into your project.
+- **Experimental Session Management**: The session management feature in FluidAuth is still in beta. It is actively being developed and might change, so please keep this in mind as you integrate it into your project.
 
-**Body Parser Required**: You need to use `body-parser` to handle request data.
+- **Body Parser Required**: You need to use `body-parser` to handle request data.
+  
+- **Cookie Parser Required**: You need to use `cookie-parser` to handle cookies.
 
-**Initialize Middleware**: Use `authService.initialize()` after setting up the session middleware to configure necessary helper functions.
+- **Initialize Middleware**: Use `authService.initialize()` after setting up the session middleware to configure necessary helper functions.
 ## Installation
 
 Install fluidAuth for express with npm
