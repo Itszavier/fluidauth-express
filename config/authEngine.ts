@@ -8,6 +8,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const authService = new AuthService({
+  redirect: {
+    onLoginSuccess: "/dashboard",
+  },
+
   providers: [
     new GoogleProvider({
       credentials: {

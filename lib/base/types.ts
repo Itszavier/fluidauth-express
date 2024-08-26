@@ -11,6 +11,10 @@ export type SerializeUserFunction = (user: Express.User) => any;
 
 export type DeserializeUserFunction = (id: string) => Promise<Express.User | null>;
 
+export interface IHandleCallbackOption {
+  middleware?: boolean;
+}
+
 /**
  * Interface for managing session data and operations.
  * Uses a generic to allow dynamic typing and inference of additional properties.
@@ -55,8 +59,14 @@ declare global {
       isAuthenticated: (req: Request) => boolean;
     }
 
-    interface User {
-    
-    }
+    interface User {}
   }
 }
+
+export type TRedirectType = "login" | "logout";
+export type TShouldRedirectFunction = (type: TRedirectType) => boolean;
+export type TRedirectFunction = (
+  response: Response,
+  type: TRedirectType,
+  success?: boolean
+) => void;

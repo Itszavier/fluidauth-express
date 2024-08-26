@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { ErrorName, FluidAuthError } from "../core/Error";
-
+import { TRedirectFunction, TRedirectType, TShouldRedirectFunction } from "./types";
 
 /** @format */
 type BaseProviderConfig =
@@ -23,10 +23,21 @@ export interface IValidationData {
 
 export class BaseProvider {
   config: BaseProviderConfig;
-
+  shouldRedirect!: TShouldRedirectFunction;
+  redirect!: TRedirectFunction;
 
   constructor(config: BaseProviderConfig) {
     this.config = config;
+  }
+
+  performRedirect(
+    response: Response,
+    type: TRedirectType,
+    success: boolean = true
+  ): void {
+    if (this.shouldRedirect(type)) {
+      this.redirect(response, type, success);
+    }
   }
 
   async handleRedirectUri(req: Request, res: Response, next: NextFunction) {

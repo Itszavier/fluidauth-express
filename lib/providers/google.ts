@@ -138,16 +138,20 @@ export class GoogleProvider extends BaseProvider {
       }
 
       const data: IGoogleData = await this.exchangeCodeForAccessToken(code as string);
-      const profile = await this.getUserInfo(data.access_token);
-      const validationInfo = await this.configOptions.verifyUser(data, profile);
-      const user = this.validateInfo(validationInfo);
 
-      console.log("the user returned", user);
+      const profile = await this.getUserInfo(data.access_token);
+
+      const validationInfo = await this.configOptions.verifyUser(data, profile);
+
+      const user = this.validateInfo(validationInfo);
 
       await req.session.create(user);
 
-      res.status(200).redirect("/dashboard");
+      this.performRedirect(res, "login", true);
+
+      res.status(200).json({ message: "authorize" });
     } catch (error) {
+      this.performRedirect(res, "login", false);
       console.error(error);
       next(error);
     }
