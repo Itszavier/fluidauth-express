@@ -7,8 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const credentialProvider = new CredentialProvider({
-  async verify(email, password) {
-    
+  async verifyUser(email, password) {
     const user = users.find(
       (userData) => userData.email === email && userData.password === password
     );
@@ -22,11 +21,13 @@ export const credentialProvider = new CredentialProvider({
 });
 
 export const googleProvider = new GoogleProvider({
-  client_id: process.env.CLIENT_ID as string,
-  client_secret: process.env.CLIENT_SECRET as string,
-  redirect_uri: "https://dfkpzk-3000.csb.app/redirect/google",
+  credentials: {
+    clientId: process.env.CLIENT_ID as string,
+    clientSecret: process.env.CLIENT_SECRET as string,
+    redirectUri: "https://dfkpzk-3000.csb.app/redirect/google",
+  },
 
-  async verify(data, profile) {
+  async verifyUser(data, profile) {
     const userExist = users.find((user) => user.email === profile.email);
 
     if (userExist) {

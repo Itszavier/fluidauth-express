@@ -1,6 +1,12 @@
 /** @format */
 
-import { Response, Request, NextFunction, CookieOptions, response } from "express";
+import {
+  Response,
+  Request,
+  NextFunction,
+  CookieOptions,
+  response,
+} from "express";
 import crypto from "crypto";
 import { BaseSessionStore } from "../base/baseSessionStore";
 import { MemoryStore } from "./memoryStore"; // Example store
@@ -50,19 +56,6 @@ export class Session {
     this.store = config.store || new MemoryStore(); // Default to in-memory store
   }
 
-  private validateConfig(config: ISessionConfig): void {
-    if (!config.secret) {
-      throw new Error("Session secret is required for encryption and decryption.");
-    }
-    if (config.sessionDuration && config.sessionDuration <= 0) {
-      throw new Error("Session duration must be a positive number.");
-    }
-  }
-
-  private getExpirationDate(): Date {
-    return new Date(Date.now() + this.sessionDuration);
-  }
-
   public async manageSession(
     req: Request,
     res: Response,
@@ -94,6 +87,20 @@ export class Session {
       next(error);
     }
   }
+  private validateConfig(config: ISessionConfig): void {
+    if (!config.secret) {
+      throw new Error(
+        "Session secret is required for encryption and decryption."
+      );
+    }
+    if (config.sessionDuration && config.sessionDuration <= 0) {
+      throw new Error("Session duration must be a positive number.");
+    }
+  }
+
+  private getExpirationDate(): Date {
+    return new Date(Date.now() + this.sessionDuration);
+  }
 
   private init(req: Request, res: Response) {
     req.session = {
@@ -122,11 +129,7 @@ export class Session {
     userData: Express.User
   ): Promise<void> {
     try {
-      console.log("user data from session create", userData);
-      
       const userId = await this.serializeUser(userData);
-
-      console.log("userId from serlize function", userId);
 
       const sessionData: ISessionData = {
         sessionId: this.generateId(),
