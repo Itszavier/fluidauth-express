@@ -1,43 +1,92 @@
-<!-- @format -->
 
-FluidAuth is a user-friendly authentication framework created by me. It simplifies the process of integrating authentication into your application, letting you focus on what really matters without getting caught up in complex setups.
+# Fluid Auth Express
 
-## Preview
+fluidauth-express makes adding authentication to your Express app easy. Follow these steps to get started quickly.
 
-This is a preview of what the framework will look like in the coming week as I prepare to publish the stable version. FluidAuth is designed to make adding authentication to your Express applications straightforward and hassle-free, allowing you to focus on developing your app while it handles the authentication with ease.
 
+## Key Points
+
+**Experimental Session Management**: The session management feature in FluidAuth is still in beta. It is actively being developed and might change, so please keep this in mind as you integrate it into your project.
+
+**Body Parser Required**: You need to use `body-parser` to handle request data.
+
+**Initialize Middleware**: Use `authService.initialize()` after setting up the session middleware to configure necessary helper functions.
+## Installation
+
+Install fluidAuth for express with npm
+
+```bash
+ npm i @fluidauth/express
+```
+    
+## Setting Up
+
+Here’s a basic setup to get you started:
 ```js
-const { authService, Session } = require("@fluidauth/express");
+const { AuthService } = require("@fluidauth/express");
 const { GoogleProvider } = require("@fluidauth/express/providers");
+const express = require("express");
+const bodyParser = require("body-parser");
 
+const app = express();
 
-// Initialize the GoogleProvider with your credentials
-const Google = new GoogleProvider({
-  credentials: {
-    redirectUri: "http://localhost:3000/redirect/google",
-    clientId: process.env.CLIENT_ID as string,
-    clientSecret: process.env.CLIENT_SECRET as string,
+// Create an instance of AuthService with your configuration
+const authService = new AuthService({
+  providers: [
+    new GoogleProvider({
+      credentials: {
+        clientId: "your-client-id",
+        clientSecret: "your-client-secret",
+        redirectUri: "your-redirect-url",
+      },
+      async verifyUser(data, profile) {
+        // Replace with your own logic to find or create a user
+        const user = await fakeDb.findUser({ email: profile.email });
+        if (user) return { user };
+
+        const newUser = await fakeDb.createUser({
+          name: profile.name,
+          email: profile.email,
+          email_verified: profile.email_verified,
+        });
+        return { user: newUser };
+      },
+    }),
+  ],
+  session: {
+    secret: "your-session-secret",
   },
-
-    // Verify the user after Google authentication
-   async verifyUser(GoogleAuthData, Profile) {
-    // Find the user in the database by email
-      const user = users.find(dbUser => dbUser.email === Profile.email);
-
-      if (user) {
-        return { user }; // Return the existing user
-      }
-
-      // Optionally handle user creation or other logic here
-      return {user: null, info: {message: "user not found"}}; // Return null if user is not found
-    }
-  }
+  redirect: {
+    onLoginSuccess: "/dashboard",
+    onLoginFailure: "/",
+  },
 });
 
-const authService = new AuthService({
-  providers: [Google],
-  session: new Session({})
+// Add body-parser middleware to handle request data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Add FluidAuth's session and initialize middleware
+app.use(authService.session());
+app.use(authService.initialize());
+
+// Define a simple route
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
+
+// Start the server
+app.listen(8080, () => {
+  console.log("Listening on http://localhost:8080/");
 });
 ```
 
-The code snippet above integrates seamlessly with Express.js using middleware. It allows you to use FluidAuth with Express effortlessly, handling authentication through the Google provider with minimal setup.
+
+## Documentation
+
+There’s more to FluidAuth than meets the eye. Stay tuned—full documentation is coming soon! on stable release
+
+
+## Appendix
+
+ I built this package as a modern and easy-to-use alternative to Passport.js, making authentication simpler and more efficient.
