@@ -51,7 +51,7 @@ export class AuthService {
     return provider.authenticate.bind(provider);
   }
 
-  public handleCallback(providerName: string, options?: IHandleCallbackOption) {
+  public handleCallback(providerName: string) {
     if (!providerName) {
       throw new FluidAuthError({
         name: ErrorName.MissingProviderNameError,
