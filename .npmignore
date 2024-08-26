@@ -5,6 +5,7 @@ server.ts
 providers.ts
 mock.ts
 tsconfig.json
+tsup.config
 config
 pages
 views
