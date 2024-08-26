@@ -1,6 +1,6 @@
 {
   "name": "@fluidauth/express",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0-beta.0",
   "description": "A simple and flexible authentication solution for Express.js, making it easy to handle user authentication, sessions, and security features with minimal setup.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -34,7 +34,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --watch ./server.ts --ext ts --exec tsx ./server.ts",
     "build": "tsup",
-    "pub": "npm publish --access=public --scope=@fluidauth --tag alpha"
+    "pub": "npm publish --access=public --scope=@fluidauth --tag beta"
   },
   "author": "Imani Brown",
   "license": "ISC",
