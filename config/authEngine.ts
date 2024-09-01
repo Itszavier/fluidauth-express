@@ -1,12 +1,21 @@
 /** @format */
 
-import { AuthService } from "../lib";
+import { AuthService, Session, MemoryStore } from "../lib";
 import { users } from "../mock";
 import { GoogleProvider, CredentialProvider } from "../lib/providers";
 import { credentialProvider } from "../providers";
 import dotenv from "dotenv";
 
 dotenv.config();
+
+const session = new Session({
+  secret: "efwfrfergfrgetgvetgtrgtrgrt",
+  store: new MemoryStore(),
+  cookie: { httpOnly: true },
+});
+
+
+
 const authService = new AuthService({
   redirect: {
     onLoginSuccess: "/dashboard",
@@ -54,7 +63,7 @@ const authService = new AuthService({
       },
     }),
   ],
-  session: { secret: "ferferfre" },
+  session,
 });
 
 authService.serializeUser(function (user) {

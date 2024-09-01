@@ -30,10 +30,7 @@ export interface IGoogleProviderConfig {
     scopes?: string[];
   };
 
-  verifyUser: (
-    GoogleAuthData: IGoogleData,
-    Profile: IGoogleProfile
-  ) => Promise<IValidationData>;
+  verifyUser: (GoogleAuthData: IGoogleData, Profile: IGoogleProfile) => Promise<IValidationData>;
 }
 
 export class GoogleProvider extends BaseProvider {
@@ -125,11 +122,7 @@ export class GoogleProvider extends BaseProvider {
     }
   }
 
-  async handleRedirectUri(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  async handleRedirectUri(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { code } = req.query;
 

@@ -1,6 +1,8 @@
 /** @format */
 
 import crypto from "crypto";
+import { FluidAuthError } from "../core/Error";
+import { IAuthServiceConfig, ISessionConfig } from "../core";
 
 function deriveKey(secret: string, length: number): Buffer {
   return crypto.createHash("sha256").update(secret).digest().slice(0, length);
@@ -35,3 +37,40 @@ export function decrypt(encryptedText: string, secret: string): string {
 
   return decrypted;
 }
+
+export function validateSessionConfig(configData: ISessionConfig | undefined) {
+  // Check if the configData object is provided
+  if (!configData) {
+    throw new FluidAuthError({
+      name: "FLUIDAUTH_CONFIG_ERROR",
+      message: "Configuration data is required and must include the session secret field.",
+      code: 400, // Optional: Include an HTTP status code if applicable
+    });
+  }
+
+  // Check if the secret field is provided within configData
+  if (!configData.secret) {
+    throw new FluidAuthError({
+      name: "FLUIDAUTH_SESSION_ERROR",
+      message: "Missing session secret in configuration data.",
+      code: 400, // Optional: Include an HTTP status code if applicable
+    });
+  }
+
+  if (typeof configData.secret !== "string") {
+    throw new FluidAuthError({
+      name: "FLUIDAUTH_SESSION_ERROR",
+      message: "The session secret must be a string.",
+      code: 400,
+    });
+  }
+
+  if (configData.sessionDuration && configData.sessionDuration <= 0) {
+    throw new FluidAuthError({
+      name: "FLUIDAUTH_SESSION_ERROR",
+      message: "Session duration must be a positive number.",
+    });
+  }
+}
+
+// function validateAuthServiceConfig(configData: IAuthServiceConfig) {}

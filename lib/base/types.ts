@@ -22,6 +22,11 @@ export interface IHandleCallbackOption {
 export interface ISession {
   create: (userData: any) => Promise<void> | void;
   destroy: () => Promise<void> | void;
+  clean: () => Promise<void> | void;
+  delete: (sessionid: string) => Promise<void> | void;
+  data: {
+    [key: string]: any;
+  };
   user: Express.User | null;
   cookie: CookieOptions | null;
   [key: string]: any;
@@ -59,14 +64,10 @@ declare global {
       isAuthenticated: (req: Request) => boolean;
     }
 
-    interface User {}
+    type User = unknown;
   }
 }
 
 export type TRedirectType = "login" | "logout";
 export type TShouldRedirectFunction = (type: TRedirectType) => boolean;
-export type TRedirectFunction = (
-  response: Response,
-  type: TRedirectType,
-  success?: boolean
-) => void;
+export type TRedirectFunction = (response: Response, type: TRedirectType, success?: boolean) => void;

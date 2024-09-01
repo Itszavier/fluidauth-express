@@ -4,16 +4,17 @@ import { Request, Response, NextFunction } from "express";
 import { Session, ISessionConfig } from "./session";
 import { BaseProvider } from "../base/BaseProvider";
 import { FluidAuthError, ErrorName } from "./Error";
-import { IHandleCallbackOption, TRedirectType } from "../base";
+import { TRedirectType } from "../base";
+import { validateSessionConfig } from "../utils/dev";
 
 export interface IRedirectConfig {
   onLoginSuccess?: string;
   onLoginFailure?: string;
 }
 
-export interface IAuthEngineConfig {
+export interface IAuthServiceConfig {
   providers: BaseProvider[];
-  session: ISessionConfig;
+  session: Session | ISessionConfig;
   redirect?: Partial<IRedirectConfig>;
 }
 
@@ -22,16 +23,22 @@ export class AuthService {
   private providers: BaseProvider[];
   private redirectConfig: IRedirectConfig;
 
-  constructor(config: IAuthEngineConfig) {
-    if (!config.session || !config.session.secret) {
-      throw new Error("[FluidAuth]: Session configuration must include a secret.");
-    }
-
+  constructor(config: IAuthServiceConfig) {
     if (!config.providers || !Array.isArray(config.providers)) {
       throw new Error("[FluidAuth]: Providers must be an array.");
     }
 
-    this._session = new Session(config.session);
+    if (config.session instanceof Session) {
+      this._session = config.session;
+    } else {
+      try {
+        validateSessionConfig(config.session);
+        this._session = new Session(config.session);
+      } catch (error) {
+        throw error;
+      }
+    }
+
     this.providers = config.providers;
     this.redirectConfig = config.redirect || {};
     this.addToProviders();
@@ -125,27 +132,19 @@ export class AuthService {
   private shouldRedirect(type: TRedirectType): boolean {
     switch (type) {
       case "login":
-        return (
-          !!this.redirectConfig.onLoginSuccess || !!this.redirectConfig.onLoginFailure
-        );
+        return !!this.redirectConfig.onLoginSuccess || !!this.redirectConfig.onLoginFailure;
       default:
         return false;
     }
   }
 
-  private redirect(
-    response: Response,
-    type: TRedirectType,
-    success: boolean = true
-  ): void {
+  private redirect(response: Response, type: TRedirectType, success: boolean = true): void {
     if (!this.redirectConfig) return; // Handle undefined case
 
     let redirectUrl: string | undefined;
 
     if (type === "login") {
-      redirectUrl = success
-        ? this.redirectConfig.onLoginSuccess
-        : this.redirectConfig.onLoginFailure;
+      redirectUrl = success ? this.redirectConfig.onLoginSuccess : this.redirectConfig.onLoginFailure;
     }
 
     if (redirectUrl) {
