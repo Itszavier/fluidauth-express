@@ -86,9 +86,11 @@ app.listen(8080, () => {
 
 ## Documentation
 
-There’s more to FluidAuth than meets the eye. Stay tuned—full documentation is coming soon! on stable release
+[click here for Documentation]()
 
 
 ## Appendix
 
  I built this package as a modern and easy-to-use alternative to Passport.js, making authentication simpler and more efficient.
+
+

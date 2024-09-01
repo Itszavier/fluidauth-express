@@ -14,8 +14,6 @@ const session = new Session({
   cookie: { httpOnly: true },
 });
 
-
-
 const authService = new AuthService({
   redirect: {
     onLoginSuccess: "/dashboard",
