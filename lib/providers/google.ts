@@ -136,7 +136,7 @@ export class GoogleProvider extends BaseProvider {
 
       const validationInfo = await this.configOptions.verifyUser(data, profile);
 
-      const user = this.validateInfo(validationInfo);
+      const user = await this.validateInfo(validationInfo);
 
       await req.session.create(user);
 

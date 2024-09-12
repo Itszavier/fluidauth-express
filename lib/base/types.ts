@@ -42,7 +42,7 @@ declare global {
   namespace Express {
     interface Request {
       session: ISession;
-      user: Express.User;
+      user: Express.User | null;
 
       /**
        * Logs in a user using the user data directly from the database.
@@ -64,7 +64,7 @@ declare global {
       isAuthenticated: (req: Request) => boolean;
     }
 
-    type User = unknown;
+    interface User {}
   }
 }
 
