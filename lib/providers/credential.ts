@@ -3,17 +3,18 @@
 import { Request, Response, NextFunction } from "express";
 import { BaseProvider, IValidationData } from "../base/BaseProvider";
 import { ErrorName, FluidAuthError } from "../core/Error";
+import { VerifyUserFunctionReturnType } from "../base";
 
 interface ICredentialProviderConfig {
-  verifyUser: (email: string, password: string) => Promise<IValidationData>; // Use Promise for async operations
+  verifyUser: (email: string, password: string) => VerifyUserFunctionReturnType; // Use Promise for async operations
 }
 
 export class CredentialProvider extends BaseProvider {
-  credentialConfig: ICredentialProviderConfig;
+  providerConfig: ICredentialProviderConfig;
 
   constructor(config: ICredentialProviderConfig) {
     super({ type: "Credentials", name: "credential" });
-    this.credentialConfig = config;
+    this.providerConfig = config;
   }
 
   async authenticate(req: Request, res: Response, next: NextFunction) {
@@ -24,7 +25,7 @@ export class CredentialProvider extends BaseProvider {
       return next(new Error(`[CredentialProvider]: ${missingField} is required`));
     }
 
-    if (!this.credentialConfig) {
+    if (!this.providerConfig) {
       return next(
         new FluidAuthError({
           name: ErrorName.BadRequestError,
@@ -34,12 +35,8 @@ export class CredentialProvider extends BaseProvider {
     }
 
     try {
-      const validationInfo = await this.credentialConfig.verifyUser(email, password);
-      const user = this.validateInfo(validationInfo);
-
-      await req.session.create(user);
-
-      next();
+      const verifyFunction = this.providerConfig.verifyUser.bind(null, email, password);
+      await this.handleLogin(req, res, verifyFunction);
     } catch (error) {
       return next(error); // Pass any errors that occurred during verification
     }

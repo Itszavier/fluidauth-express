@@ -11,7 +11,6 @@ export interface ErrorInfo {
 export interface IAuthResponse {
   info?: { message: string; code: number; name?: string };
   user: Express.User | null;
-  error?: Error;
 }
 
 export type VerifyUserFunctionReturnType = Promise<IAuthResponse> | IAuthResponse;

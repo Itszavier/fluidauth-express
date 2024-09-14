@@ -4,6 +4,7 @@ import querystring from "querystring";
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { BaseProvider, IValidationData } from "../base/BaseProvider";
+import { VerifyUserFunctionReturnType } from "../base";
 
 export interface IGoogleProfile {
   name: string;
@@ -30,7 +31,7 @@ export interface IGoogleProviderConfig {
     scopes?: string[];
   };
 
-  verifyUser: (GoogleAuthData: IGoogleData, Profile: IGoogleProfile) => Promise<IValidationData>;
+  verifyUser: (GoogleAuthData: IGoogleData, Profile: IGoogleProfile) => VerifyUserFunctionReturnType;
 }
 
 export class GoogleProvider extends BaseProvider {
@@ -138,7 +139,6 @@ export class GoogleProvider extends BaseProvider {
 
       this.handleLogin(req, res, verifyFunction);
     } catch (error) {
-      console.error(error);
       next(error);
     }
   }

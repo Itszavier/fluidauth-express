@@ -7,17 +7,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const credentialProvider = new CredentialProvider({
-  async verifyUser(email, password) {
-    const user = users.find((userData) => userData.email === email && userData.password === password);
-
-    if (!user) {
-      return { user: null, info: { message: "user not found" } };
-    }
-
-    return { user };
-  },
-});
 
 export const googleProvider = new GoogleProvider({
   credentials: {
