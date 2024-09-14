@@ -2,7 +2,7 @@
 
 import { Request, Response, NextFunction } from "express";
 import { ErrorName, FluidAuthError } from "../core/Error";
-import { TRedirectFunction, TRedirectType, TShouldRedirectFunction } from "./types";
+import { IAuthResponse, TRedirectFunction, TRedirectType, TShouldRedirectFunction } from "./types";
 
 /** @format */
 type BaseProviderConfig =
@@ -30,46 +30,49 @@ export class BaseProvider {
     this.config = config;
   }
 
-  performRedirect(
-    response: Response,
-    type: TRedirectType,
-    success: boolean = true
-  ): void {
+  performRedirect(response: Response, type: TRedirectType, success: boolean = true): void {
     if (this.shouldRedirect(type)) {
       this.redirect(response, type, success);
     }
   }
 
   async handleRedirectUri(req: Request, res: Response, next: NextFunction) {
-    console.warn(
-      `${this.config.name} Provider redirect uri handler function not implemented`
-    );
+    console.warn(`${this.config.name} Provider redirect uri handler function not implemented`);
     next();
   }
 
-  validateInfo(data: IValidationData): Express.User {
-    if (!data.user && data.info) {
-      if (data.info instanceof Error) {
-        throw data.info;
+  async processVerificationResult(verifyFunction: () => Promise<IAuthResponse> | IAuthResponse) {
+    try {
+      let results = verifyFunction();
+
+      if (results instanceof Promise) {
+        results = await results;
       }
 
-      throw new FluidAuthError({
-        message: data.info.message || "Unauthorized",
-        code: data.info.code || 401,
+      return results;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async handleLogin(req: Request, res: Response, fn: () => Promise<IAuthResponse> | IAuthResponse) {
+    try {
+      const { user, info } = await this.processVerificationResult(fn);
+
+      if (!user) {
+        return res
+          .status(info?.code || 401)
+          .json({ name: info?.name || "FluidAuthSoftError", message: info?.message || "Unauthorized" });
+      }
+
+      await req.session.create(user);
+
+      res.status(200).json({
+        message: "successfully logged in",
       });
+    } catch (error) {
+      throw error;
     }
-
-    if (data.error && data.error instanceof Error) {
-      throw data.error;
-    }
-
-    if (!data.user) {
-      throw new FluidAuthError({
-        message: "Unauthorized: Verify did not return a user",
-      });
-    }
-
-    return data.user;
   }
 
   // Example method to demonstrate type narrowing

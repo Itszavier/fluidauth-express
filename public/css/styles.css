@@ -119,6 +119,7 @@ form {
   width: 50%;
   gap: 12px;
   padding: 23px;
+  width: 600px;
 }
 
 form .form_control {
@@ -151,4 +152,29 @@ form .form_control {
 
 .json-number {
   color: rgb(199, 201, 202);
+}
+
+.providers {
+  width: 90%;
+  background-color: var(--accent-color);
+  padding: 10px;
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  text-transform: capitalize;
+  background-color: var(--secondary-bg);
+}
+
+.providers_wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+
+  align-items: center;
+  background-color: red;
 }

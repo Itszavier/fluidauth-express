@@ -1,5 +1,6 @@
 /** @format */
 import { CredentialProvider } from "./lib/providers/credential";
+import { GithubProvider } from "./lib/providers/github";
 import { GoogleProvider } from "./lib/providers/google";
 import { users } from "./mock";
 import dotenv from "dotenv";
@@ -8,9 +9,7 @@ dotenv.config();
 
 export const credentialProvider = new CredentialProvider({
   async verifyUser(email, password) {
-    const user = users.find(
-      (userData) => userData.email === email && userData.password === password
-    );
+    const user = users.find((userData) => userData.email === email && userData.password === password);
 
     if (!user) {
       return { user: null, info: { message: "user not found" } };
@@ -46,3 +45,4 @@ export const googleProvider = new GoogleProvider({
     return { user };
   },
 });
+

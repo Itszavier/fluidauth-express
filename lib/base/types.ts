@@ -1,11 +1,20 @@
 /** @format */
 import { Response, Request, CookieOptions } from "express";
+import { verify } from "jsonwebtoken";
 
 export interface ErrorInfo {
   code: number;
   message: string;
   name: string;
 }
+
+export interface IAuthResponse {
+  info?: { message: string; code: number; name?: string };
+  user: Express.User | null;
+  error?: Error;
+}
+
+export type VerifyUserFunctionReturnType = Promise<IAuthResponse> | IAuthResponse;
 
 export type SerializeUserFunction = (user: Express.User) => any;
 

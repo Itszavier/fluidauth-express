@@ -10,31 +10,12 @@
     <div class="page">
       <h1>Login Page</h1>
       <p>The ultimate easy authencation package</p>
-
-      <form action="/login" method="post">
-        <div class="form_control">
-          <label for="email">Email</label>
-          <input
-            value="user1@gmail.com"
-            type="text"
-            name="email"
-            placeholder="email"
-            id="email"
-          />
+ 
+      <form action="/login" method="post"> 
+       <div class="providers_wrapper"></div>
+          <a href="/login/github" class="providers">github</a>
+          <a href="/login/google" class="providers">google</a>
         </div>
-
-        <div class="form_control">
-          <label for="password">Password</label>
-          <input
-            value="efrefef"
-            type="password"
-            name="password"
-            placeholder="password"
-            id="password"
-          />
-        </div>
-
-        <button type="submit">Login</button>
       </form>
     </div>
 

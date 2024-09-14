@@ -134,17 +134,10 @@ export class GoogleProvider extends BaseProvider {
 
       const profile = await this.getUserInfo(data.access_token);
 
-      const validationInfo = await this.configOptions.verifyUser(data, profile);
+      const verifyFunction = this.configOptions.verifyUser.bind(null, data, profile);
 
-      const user = await this.validateInfo(validationInfo);
-
-      await req.session.create(user);
-
-      this.performRedirect(res, "login", true);
-
-      res.status(200).json({ message: "authorize" });
+      this.handleLogin(req, res, verifyFunction);
     } catch (error) {
-      this.performRedirect(res, "login", false);
       console.error(error);
       next(error);
     }

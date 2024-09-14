@@ -3,11 +3,10 @@
 import { NextFunction, Router } from "express";
 import authEngine from "../config/authEngine";
 import { users } from "../mock";
+import authService from "../config/authEngine";
 const router = Router();
 
-router.post("/login", authEngine.authenticate("credential"), function (req, res) {
-  res.status(200).redirect("/dashboard");
-});
+
 
 router.use(function (req, res, next) {
   console.log(req.session, "api auth router");
@@ -18,14 +17,8 @@ router.get("/session", function (req, res, next) {
   res.status(200).json({ session: req.session || null, user: req.user || null });
 });
 
-router.get("/login/google", authEngine.authenticate("google"), function (req, res, next) {
-  if (req.user) {
-    console.log("user detected");
-  }
+router.get("/login/github", authService.authenticate("Github"));
 
-  res.status(200).redirect("/dashboard");
-});
-
-router.get("/redirect/google", authEngine.handleCallback("google"));
+router.get("/redirect/github", authEngine.handleCallback("Github"));
 
 export default router;
