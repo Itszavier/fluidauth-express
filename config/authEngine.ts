@@ -53,8 +53,6 @@ const authService = new AuthService({
     store: new MemoryStore(),
     sessionDuration: 20 * 1000,
     cookie: { httpOnly: true},
-    extendSessionBeforeExpiry: true,
-    sessionExtensionThresholdInMs:10 * 1000,
   }),
 });
 
