@@ -32,4 +32,7 @@ app.use(function (req, res, next) {
 app.use(authRoutes);
 app.use(pagesRoutes);
 
-app.listen(PORT, () => console.log(`Alive on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.clear();
+  console.log(`Alive on http://localhost:${PORT}`);
+});

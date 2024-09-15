@@ -15,6 +15,7 @@ export abstract class BaseSessionStore {
    */
   abstract create(sessionData: ISessionData): Promise<void> | void;
 
+  abstract update(sesssionId: string, sessionData: ISessionData): Promise<void> | void;
   /**
    * Deletes the session with the specified ID.
    *
@@ -29,9 +30,7 @@ export abstract class BaseSessionStore {
    * @param {string} sessionId - The ID of the session to retrieve.
    * @returns {Promise<ISessionData | null> | (ISessionData | null)} A promise that resolves with the session data or `null` if not found, or the data directly if synchronous.
    */
-  abstract get(
-    sessionId: string
-  ): Promise<ISessionData | null> | (ISessionData | null);
+  abstract get(sessionId: string): Promise<ISessionData | null> | (ISessionData | null);
 
   /**
    * Cleans up old or unused data.

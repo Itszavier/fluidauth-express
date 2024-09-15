@@ -13,10 +13,13 @@ export interface ISessionConfig {
   sessionDuration?: number;
   cookie?: CookieOptions;
   store?: BaseSessionStore;
+  extendSessionBeforeExpiry?: boolean;
+  sessionExtensionThresholdInMs?: number;
 }
 
 function isSessionExpired(sessionData: ISessionData): boolean {
-  return new Date(sessionData.expires).getTime() <= Date.now();
+  const results = new Date(sessionData.expires).getTime() <= Date.now();
+  return results;
 }
 
 function getExpirationDate(duration: number): Date {
@@ -24,8 +27,10 @@ function getExpirationDate(duration: number): Date {
 }
 
 export class Session {
-  sessionInfo: { name: string; secret: string; expires: Date };
+  sessionInfo: { name: string; secret: string };
   cookieOption: CookieOptions;
+
+  config: ISessionConfig;
   store: BaseSessionStore;
   sessionDuration: number;
 
@@ -48,7 +53,6 @@ export class Session {
     this.sessionInfo = {
       name: config.name || "fluid-auth-session",
       secret: config.secret,
-      expires: getExpirationDate(this.sessionDuration),
     };
 
     this.store = config.store || new MemoryStore();
@@ -56,6 +60,8 @@ export class Session {
     this.cleanSession().catch((error) => {
       console.error("Failed to clean session on startup", error);
     });
+
+    this.config = config;
   }
 
   public async manageSession(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -71,7 +77,16 @@ export class Session {
       const sessionId = this.decryptSessionId(sessionCookie);
       const sessionData = await this.store.get(sessionId);
 
-      if (sessionData === null || isSessionExpired(sessionData)) {
+      if (sessionData === null) {
+        this.destroySession(req, res);
+        return next();
+      }
+
+      if (this.shouldExtendSession(sessionData, this.config.sessionExtensionThresholdInMs)) { 
+        await this.extendCurrentSession(req, res);
+      }
+
+      if (isSessionExpired(sessionData)) {
         await this.destroySession(req, res);
         return next();
       }
@@ -112,7 +127,7 @@ export class Session {
 
       const sessionData: ISessionData = {
         sessionId: this.generateId(),
-        expires: getExpirationDate(this.sessionDuration),
+        expires: getExpirationDate(this.sessionDuration).toISOString(),
         userId: userId,
       };
 
@@ -157,6 +172,17 @@ export class Session {
     return crypto.randomBytes(18).toString("hex");
   }
 
+  private shouldExtendSession(sessionData: ISessionData, threshold: number = 4 * 60 * 1000): boolean {
+    if (!this.config.extendSessionBeforeExpiry) {
+      return false;
+    }
+
+    const timeToExpiry = new Date(sessionData.expires).getTime() - Date.now();
+    const shouldExtend = timeToExpiry <= threshold;
+
+    return shouldExtend;
+  }
+
   public async cleanSession() {
     return await this.store.clean();
   }
@@ -167,5 +193,44 @@ export class Session {
 
   public async deleteSession(sessionId: string) {
     return await this.store.delete(sessionId);
+  }
+
+  /** extends the session in the database using sessionId */
+  public async extendSession(sessionId: string, newDuration?: number) {
+    const sessionData = await this.store.get(sessionId);
+
+    const extendedTime = newDuration || this.sessionDuration;
+
+    if (!sessionData) return;
+
+    const newExpiration = new Date(Date.now() + extendedTime);
+
+    sessionData.expires = newExpiration.toISOString();
+
+    await this.store.update(sessionId, sessionData);
+  }
+
+  /** extend current session in the database using sessionId */
+  public async extendCurrentSession(req: Request, res: Response, newDuration?: number) {
+    const sessionCookie = req.cookies[this.sessionInfo.name];
+
+    if (!sessionCookie) {
+      return; // No session cookie found; no session to extend
+    }
+
+    try {
+      const sessionId = this.decryptSessionId(sessionCookie);
+      const extendDuration = newDuration || this.sessionDuration; // Default to session duration, or you can pass a specific duration
+      await this.extendSession(sessionId, extendDuration);
+
+      // Optionally, update the cookie expiration if you want to match it with the new session duration
+      res.cookie(
+        this.sessionInfo.name,
+        sessionCookie, // sessionId was already encrypted in the cookie
+        { ...this.cookieOption, maxAge: extendDuration }
+      );
+    } catch (error) {
+      throw error;
+    }
   }
 }

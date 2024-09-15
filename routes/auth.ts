@@ -9,7 +9,7 @@ const router = Router();
 
 
 router.use(function (req, res, next) {
-  console.log(req.session, "api auth router");
+ // console.log(req.session, "api auth router");
   next();
 });
 

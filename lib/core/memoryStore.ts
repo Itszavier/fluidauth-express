@@ -18,6 +18,10 @@ export class MemoryStore extends BaseSessionStore {
     this.db.set(sessionData.sessionId, sessionData);
   }
 
+  update(sessionId: string, sessionData: ISessionData): void {
+    this.db.set(sessionId, sessionData);
+  }
+
   async delete(sessionId: string): Promise<void> {
     const result = this.db.delete(sessionId);
   }

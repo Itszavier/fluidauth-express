@@ -8,12 +8,6 @@ import { GithubProvider } from "../lib/providers/github";
 
 dotenv.config();
 
-const session = new Session({
-  secret: "efwfrfergfrgetgvetgtrgtrgrt",
-  store: new MemoryStore(),
-  cookie: { httpOnly: true, secure: true, },
-});
-
 export const Github = new GithubProvider({
   credential: {
     clientId: process.env.GITHUB_CLIENT_ID as string,
@@ -54,7 +48,14 @@ const authService = new AuthService({
     onLoginSuccess: "/dashboard",
   },
   providers: [Github, Credential],
-  session,
+  session: new Session({
+    secret: "efwfrfergfrgetgvetgtrgtrgrt",
+    store: new MemoryStore(),
+    sessionDuration: 20 * 1000,
+    cookie: { httpOnly: true},
+    extendSessionBeforeExpiry: true,
+    sessionExtensionThresholdInMs:10 * 1000,
+  }),
 });
 
 authService.serializeUser(function (user) {

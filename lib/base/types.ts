@@ -43,7 +43,7 @@ export interface ISession {
 export interface ISessionData {
   sessionId: string;
   userId: string;
-  expires: Date;
+  expires: string;
 }
 
 declare global {
