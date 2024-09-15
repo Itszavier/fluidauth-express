@@ -76,7 +76,6 @@ export class GithubProvider extends BaseProvider {
 
   async authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
     const url = this.generateUrl();
-    console.log(url);
     res.status(200).redirect(url);
   }
 
@@ -147,8 +146,6 @@ export class GithubProvider extends BaseProvider {
       });
 
       const data = await userResponse.json();
-
-      console.log(data);
 
       return data;
     } catch (error) {

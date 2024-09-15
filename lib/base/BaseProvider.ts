@@ -67,10 +67,17 @@ export class BaseProvider {
 
       await req.session.create(user);
 
+      if (this.shouldRedirect("login")) {
+        return this.redirect(res, "login", true);
+      }
+
       res.status(200).json({
         message: "successfully logged in",
       });
     } catch (error) {
+      if (this.shouldRedirect("login")) {
+        return this.redirect(res, "login", true);
+      }
       throw error;
     }
   }

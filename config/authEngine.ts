@@ -11,7 +11,7 @@ dotenv.config();
 const session = new Session({
   secret: "efwfrfergfrgetgvetgtrgtrgrt",
   store: new MemoryStore(),
-  cookie: { httpOnly: true },
+  cookie: { httpOnly: true, secure: true, },
 });
 
 export const Github = new GithubProvider({

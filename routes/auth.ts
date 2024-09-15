@@ -17,8 +17,8 @@ router.get("/session", function (req, res, next) {
   res.status(200).json({ session: req.session || null, user: req.user || null });
 });
 
-router.get("/login/github", authService.authenticate("Github"));
+router.get("/login/github", authService.authenticate("github"));
 
-router.get("/redirect/github", authEngine.handleCallback("Github"));
+router.get("/redirect/github", authEngine.handleCallback("github"));
 
 export default router;

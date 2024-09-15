@@ -51,7 +51,11 @@ export class Session {
       expires: getExpirationDate(this.sessionDuration),
     };
 
-    this.store = config.store || new MemoryStore(); // Default to in-memory store
+    this.store = config.store || new MemoryStore();
+
+    this.cleanSession().catch((error) => {
+      console.error("Failed to clean session on startup", error);
+    });
   }
 
   public async manageSession(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -155,6 +159,10 @@ export class Session {
 
   public async cleanSession() {
     return await this.store.clean();
+  }
+
+  public async getSession(sessionId: string) {
+    return await this.store.get(sessionId);
   }
 
   public async deleteSession(sessionId: string) {
