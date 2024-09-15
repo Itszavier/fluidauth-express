@@ -24,7 +24,7 @@ export interface IGoogleData {
 }
 
 export interface IGoogleProviderConfig {
-  credentials: {
+  credential: {
     redirectUri: string;
     clientId: string;
     clientSecret: string;
@@ -49,15 +49,15 @@ export class GoogleProvider extends BaseProvider {
   authenticate(req: Request, res: Response): void {
     const state = crypto.randomBytes(8).toString("hex");
 
-    const scopes = this.configOptions.credentials.scopes
-      ? this.configOptions.credentials.scopes.join(" ")
+    const scopes = this.configOptions.credential.scopes
+      ? this.configOptions.credential.scopes.join(" ")
       : "openid profile email";
 
     const config = {
       response_type: "code",
-      client_id: this.configOptions.credentials.clientId,
+      client_id: this.configOptions.credential.clientId,
       scope: scopes,
-      redirect_uri: this.configOptions.credentials.redirectUri,
+      redirect_uri: this.configOptions.credential.redirectUri,
       state: state,
     };
 
@@ -94,9 +94,9 @@ export class GoogleProvider extends BaseProvider {
 
     const params = new URLSearchParams({
       code: code,
-      client_id: this.configOptions.credentials.clientId,
-      client_secret: this.configOptions.credentials.clientSecret,
-      redirect_uri: this.configOptions.credentials.redirectUri,
+      client_id: this.configOptions.credential.clientId,
+      client_secret: this.configOptions.credential.clientSecret,
+      redirect_uri: this.configOptions.credential.redirectUri,
       grant_type: "authorization_code",
     });
 
@@ -125,10 +125,15 @@ export class GoogleProvider extends BaseProvider {
 
   async handleRedirectUri(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { code } = req.query;
+      const code = req.query.code;
+      const error = req.query.error;
 
-      if (!code) {
-        throw new Error("Authorization code is missing");
+      if (error) {
+        res.status(401).json({
+          error: "access_denied",
+          message: "Authorization was denied. Please try again or contact support if you need assistance.",
+        });
+        return;
       }
 
       const data: IGoogleData = await this.exchangeCodeForAccessToken(code as string);
@@ -137,7 +142,7 @@ export class GoogleProvider extends BaseProvider {
 
       const verifyFunction = this.configOptions.verifyUser.bind(null, data, profile);
 
-      this.handleLogin(req, res, verifyFunction);
+      await this.handleLogin(req, res, verifyFunction);
     } catch (error) {
       next(error);
     }

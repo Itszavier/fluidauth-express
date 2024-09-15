@@ -9,7 +9,7 @@ dotenv.config();
 
 
 export const googleProvider = new GoogleProvider({
-  credentials: {
+  credential: {
     clientId: process.env.CLIENT_ID as string,
     clientSecret: process.env.CLIENT_SECRET as string,
     redirectUri: "https://dfkpzk-3000.csb.app/redirect/google",

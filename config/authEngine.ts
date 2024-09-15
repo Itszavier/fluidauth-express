@@ -41,11 +41,19 @@ export const Github = new GithubProvider({
   },
 });
 
+const Credential = new CredentialProvider({
+  async verifyUser(email, password) {
+    const user = users.find((user) => user.email === email);
+
+    return { user: user || null };
+  },
+});
+
 const authService = new AuthService({
   redirect: {
     onLoginSuccess: "/dashboard",
   },
-  providers: [Github],
+  providers: [Github, Credential],
   session,
 });
 

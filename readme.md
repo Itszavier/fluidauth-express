@@ -4,6 +4,13 @@
 
 fluidauth-express makes adding authentication to your Express app easy. Follow these steps to get started quickly.
 
+
+## Documentation
+
+For a comprehensive guide on using FluidAuth Express, including installation, setup, and API reference, please visit the official documentation:
+
+[FluidAuth Documentation](https://fluidauth.vercel.app/)
+
 ## Key Points
 
 - **Experimental Session Management**: The session management feature in FluidAuth is still in beta. It is actively being developed and might change, so please keep this in mind as you integrate it into your project.
@@ -13,11 +20,6 @@ fluidauth-express makes adding authentication to your Express app easy. Follow t
 
 - **Initialize Middleware**: Use `authService.initialize()` after setting up the session middleware to configure necessary helper functions.
 
-## Documentation
-
-For a comprehensive guide on using FluidAuth Express, including installation, setup, and API reference, please visit the official documentation:
-
-[FluidAuth Documentation](https://quickstack.gitbook.io/fluidauth/)
 
 This resource provides everything you need to integrate authentication into your Express.js applications, from setting up providers to managing sessions.
 
