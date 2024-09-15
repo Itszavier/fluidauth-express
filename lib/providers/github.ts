@@ -69,7 +69,7 @@ export class GithubProvider extends BaseProvider {
   providerConfig: IGithubProviderConfig;
 
   constructor(providerConfig: IGithubProviderConfig) {
-    super({ type: "OAuth2", name: "Github" });
+    super({ type: "OAuth2", name: "github" });
 
     this.providerConfig = providerConfig;
   }
