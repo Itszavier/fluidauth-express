@@ -55,6 +55,15 @@ export class BaseProvider {
     }
   }
 
+  // Example method to demonstrate type narrowing
+  authenticate(req: Request, res: Response, next: NextFunction) {}
+
+  handleFailureRedirect(res: Response) {
+    if (this.shouldRedirect("login")) {
+      this.redirect(res, "login", true);
+    }
+  }
+
   async handleLogin(req: Request, res: Response, fn: () => Promise<IAuthResponse> | IAuthResponse) {
     try {
       const { user, info } = await this.processVerificationResult(fn);
@@ -81,7 +90,4 @@ export class BaseProvider {
       throw error;
     }
   }
-
-  // Example method to demonstrate type narrowing
-  authenticate(req: Request, res: Response, next: NextFunction) {}
 }
