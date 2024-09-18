@@ -1,17 +1,31 @@
+# Ignore Node.js dependencies
 node_modules
+
+# Ignore environment and configuration files
 .env
+tsconfig.json
+tsup.config.ts
+tsup.config
+
+# Ignore build output and compiled code
 lib
+
+# Ignore server-side files
 server.ts
 providers.ts
 mock.ts
-tsconfig.json
-tsup.config
+
+# Ignore application directories
 config
 pages
 views
 routes
 public
+
+# Ignore Git-related files
 .gitignore
+.github
+
+# Ignore documentation and security files
 .npmignore
-tsconfig.json
-tsup.config
+SECURITY.md

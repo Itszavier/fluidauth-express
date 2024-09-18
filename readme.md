@@ -1,5 +1,3 @@
-<!-- @format -->
-
 # Fluid Auth Express
 
 fluidauth-express makes adding authentication to your Express app easy. Follow these steps to get started quickly.
@@ -11,19 +9,56 @@ For a comprehensive guide on using FluidAuth Express, including installation, se
 
 [FluidAuth Documentation](https://fluidauth.vercel.app/)
 
-## Key Points
-
-- **Experimental Session Management**: The session management feature in FluidAuth is still in beta. It is actively being developed and might change, so please keep this in mind as you integrate it into your project.
+### Key Points
 
 - **Body Parser Required**: You need to use `body-parser` to handle request data.
 - **Cookie Parser Required**: You need to use `cookie-parser` to handle cookies.
 
 - **Initialize Middleware**: Use `authService.initialize()` after setting up the session middleware to configure necessary helper functions.
+Here’s the Quick Start guide using `require`:
 
 
-This resource provides everything you need to integrate authentication into your Express.js applications, from setting up providers to managing sessions.
 
-Here’s the Markdown text for a section about CommonJS and ES module support:
+## Quick Start
+
+```js
+// Import GithubProvider from FluidAuth-Express
+const { GithubProvider } = require("@fluidauth/express/providers");
+
+// Initialize GitHub provider with credentials
+const Github = new GithubProvider({
+  credential: {
+    clientId: "your-client-id",
+    clientSecret: "your-client-secret",
+    redirectUri: "your-redirect-uri",
+  },
+  async verifyUser(data) {
+    const user = await findUserByEmail(data.email);
+    return user ? { user } : { user: null, info: { message: "User not found" } };
+  }
+});
+```
+
+```js
+// Express server setup
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const { AuthService, Session } = require('@fluidauth/express');
+
+const app = express();
+const authService = new AuthService({
+  providers: [Github],
+  session: new Session({ secret: "your-session-secret" }),
+  redirect: { onLoginSuccess: "/dashboard" },
+});
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(authService.session());
+app.use(authService.initialize());
+
+app.listen(3000, () => console.log("Server running on port 3000"));
+```
 
 ## Module Support
 

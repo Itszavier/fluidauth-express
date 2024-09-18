@@ -105,7 +105,7 @@ export class Session {
     req.session = {
       user: null,
       cookie: null,
-      data: {},
+      state: {},
       create: this.createSession.bind(this, req, res),
       destroy: this.destroySession.bind(this, req, res),
       delete: this.deleteSession.bind(this),

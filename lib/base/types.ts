@@ -1,7 +1,5 @@
 /** @format */
 import { Response, Request, CookieOptions } from "express";
-import { verify } from "jsonwebtoken";
-
 export interface ErrorInfo {
   code: number;
   message: string;
@@ -32,7 +30,7 @@ export interface ISession {
   destroy: () => Promise<void> | void;
   clean: () => Promise<void> | void;
   delete: (sessionid: string) => Promise<void> | void;
-  data: {
+  state: {
     [key: string]: any;
   };
   user: Express.User | null;
