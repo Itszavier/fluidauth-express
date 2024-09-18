@@ -1,7 +1,7 @@
 /** @format */
 
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider, IValidationData } from "../base/BaseProvider";
+import { BaseProvider } from "../base/BaseProvider";
 import { ErrorName, FluidAuthError } from "../core/Error";
 import { VerifyUserFunctionReturnType } from "../base";
 
