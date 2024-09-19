@@ -10,19 +10,37 @@
     <div class="page">
       <h1>Login Page</h1>
       <p>The ultimate easy authencation package</p>
- 
-      <form action="/login" method="post"> 
-       <div class="providers_wrapper"></div>
+
+      <form class="form" action="/login" method="post">
+        <div class="form_control">
+          <label for="email">Email</label>
+          <input
+            name="email"
+            placeholder="Email"
+            value="user1@gmail.com"
+            type="text"
+          />
+        </div>
+
+        <div class="form_control">
+          <label for="password">Password</label>
+          <input
+            name="password"
+            placeholder="Password"
+            value="efrefef"
+            type="password"
+          />
+        </div>
+
+        <div class="btn-group">
+          <button type="submit" class="login-btn">Login</button>
+        </div>
+
+        <div class="providers_wrapper">
           <a href="/login/github" class="providers">github</a>
           <a href="/login/google" class="providers">google</a>
         </div>
       </form>
     </div>
-
-    <script>
-      function handleLogin() {
-        console.log("handle login");
-      }
-    </script>
   </body>
 </html>

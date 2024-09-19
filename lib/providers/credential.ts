@@ -18,11 +18,16 @@ export class CredentialProvider extends BaseProvider {
   }
 
   async authenticate(req: Request, res: Response, next: NextFunction) {
-    const { email, password }: { email: string; password: string } = req.body || {};
+    const { email, password }: { email: string; password: string } =
+      req.body || {};
+
+    console.log("Email & Password:", email, password);
 
     if (!email || !password) {
       const missingField = !email ? "email" : "password";
-      return next(new Error(`[CredentialProvider]: ${missingField} is required`));
+      return next(
+        new Error(`[CredentialProvider]: ${missingField} is required`)
+      );
     }
 
     if (!this.providerConfig) {
@@ -35,7 +40,11 @@ export class CredentialProvider extends BaseProvider {
     }
 
     try {
-      const verifyFunction = this.providerConfig.verifyUser.bind(null, email, password);
+      const verifyFunction = this.providerConfig.verifyUser.bind(
+        null,
+        email,
+        password
+      );
       await this.handleLogin(req, res, verifyFunction);
     } catch (error) {
       return next(error); // Pass any errors that occurred during verification
