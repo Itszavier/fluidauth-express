@@ -15,8 +15,6 @@ For a comprehensive guide on using FluidAuth Express, including installation, se
 - **Cookie Parser Required**: You need to use `cookie-parser` to handle cookies.
 
 - **Initialize Middleware**: Use `authService.initialize()` after setting up the session middleware to configure necessary helper functions.
-Here’s the Quick Start guide using `require`:
-
 
 
 ## Quick Start
