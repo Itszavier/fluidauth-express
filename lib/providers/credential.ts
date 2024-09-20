@@ -6,7 +6,10 @@ import { ErrorName, FluidAuthError } from "../core/Error";
 import { VerifyUserFunctionReturnType } from "../base";
 
 interface ICredentialProviderConfig {
-  verifyUser: (email: string, password: string) => VerifyUserFunctionReturnType; // Use Promise for async operations
+  validateUser: (
+    email: string,
+    password: string
+  ) => VerifyUserFunctionReturnType; // Use Promise for async operations
 }
 
 export class CredentialProvider extends BaseProvider {
@@ -14,7 +17,7 @@ export class CredentialProvider extends BaseProvider {
 
   constructor(config: ICredentialProviderConfig) {
     super({ type: "Credentials", name: "credential" });
-    
+
     this.providerConfig = config;
   }
 
@@ -22,21 +25,25 @@ export class CredentialProvider extends BaseProvider {
     const { email, password }: { email: string; password: string } =
       req.body || {};
 
-    console.log("Email & Password:", email, password);
-
     if (!email || !password) {
-      this.handleAuthError({req, res, next, message: "email & password must is missing"})
+      this.handleAuthError({
+        context: { req, res, next },
+        message: "email & password fields are missing ",
+      });
       return;
     }
 
-  
     try {
-      const verifyFunction = this.providerConfig.verifyUser.bind(
+      const validateUserFunction = this.providerConfig.validateUser.bind(
         null,
         email,
         password
       );
-      await this.handleLogin(req, res, verifyFunction);
+
+      await this.handleLogin({
+        context: { req, res, next },
+        validateUserFunction,
+      });
     } catch (error) {
       return next(error); // Pass any errors that occurred during verification
     }

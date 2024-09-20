@@ -9,6 +9,7 @@ import {
   TShouldRedirectFunction,
 } from "./types";
 import { IRedirectConfig } from "../core";
+import { config } from "dotenv";
 
 /** @format */
 type BaseProviderConfig =
@@ -21,17 +22,42 @@ type BaseProviderConfig =
       name: string;
     };
 
+async function resolveVerificationResult(
+  verifyFunction: () => Promise<IAuthResponse> | IAuthResponse
+) {
+  try {
+    let results = verifyFunction();
+
+    if (results instanceof Promise) {
+      results = await results;
+    }
+
+    return results;
+  } catch (error) {
+    throw error;
+  }
+}
+
 export interface IValidationData {
   info?: Error | { message?: string; code?: number } | null;
   error?: Error | null;
   user?: Express.User | null;
 }
 
-interface IHandleAuthErrorConfig {
+export interface IHttpContext {
   req: Request;
   res: Response;
   next: NextFunction;
+}
+
+export interface IHandleAuthErrorConfig {
+  context: IHttpContext;
   message?: string;
+}
+
+interface IHandleLoginConfig {
+  context: IHttpContext;
+  validateUserFunction: () => Promise<IAuthResponse> | IAuthResponse;
 }
 
 export interface IBaseProviderLocal {
@@ -65,7 +91,7 @@ export class BaseProvider {
     next();
   }
 
-  async processVerificationResult(
+  async checkVerificationResult(
     verifyFunction: () => Promise<IAuthResponse> | IAuthResponse
   ) {
     try {
@@ -90,56 +116,76 @@ export class BaseProvider {
     }
   }
 
-  async handleLogin(
-    req: Request,
-    res: Response,
-    fn: () => Promise<IAuthResponse> | IAuthResponse
-  ) {
+  async handleLogin(config: IHandleLoginConfig) {
+    // Validate required config properties
+
+    const context = config.context || {};
+    const validateUserFunction = config.validateUserFunction;
+
+    if (!context.req || !context.res) {
+      throw new Error("Request and Response objects must be provided.");
+    }
+
+    const { req, res } = context;
+    const local = this._local;
+
     try {
-      const { user, info } = await this.processVerificationResult(fn);
+      const { user, info } = await resolveVerificationResult(
+        validateUserFunction
+      );
 
       if (!user) {
-        return res.status(info?.code || 401).json({
-          name: info?.name || "FluidAuthSoftError",
-          message: info?.message || "Unauthorized",
+        return this.handleAuthError({
+          context,
+          message: info?.message || "UnAuthorized",
         });
+      }
+
+      if (!context.next || typeof context.next !== "function") {
+        throw new Error(
+          "Next function must be provided and should be a function."
+        );
       }
 
       await req.session.create(user);
 
-      if (this.shouldRedirect("login")) {
-        return this.redirect(res, "login", true);
+      if (local.redirect.onLoginSuccess) {
+        return res.redirect(local.redirect.onLoginSuccess);
       }
 
       res.status(200).json({
-        message: "successfully logged in",
+        message: "Logged in",
       });
     } catch (error) {
-      if (this.shouldRedirect("login")) {
-        return this.redirect(res, "login", true);
+      if (error instanceof Error) {
+        this.handleAuthError({ context, message: error.message });
+        return;
       }
-      throw error;
+      context.next(error);
     }
   }
 
   handleAuthError(config: IHandleAuthErrorConfig) {
     // Check if the required config properties are provided
-    if (!config.req) {
+
+    const context = config.context || {};
+    if (!context.req) {
       throw new Error("Request object must be provided.");
     }
 
-    if (!config.res) {
+    if (!context.res) {
       throw new Error("Response object must be provided.");
     }
 
-    if (!config.next || typeof config.next !== "function") {
+    if (!context.next || typeof context.next !== "function") {
       throw new Error(
         "Next function must be provided and should be a function."
       );
     }
 
     // Destructure the request and response from the config
-    const { req, res } = config;
+    const { req, res } = context;
+
     const local = this._local;
 
     // Default error message if none is provided
