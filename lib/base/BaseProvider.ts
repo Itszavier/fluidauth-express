@@ -42,9 +42,7 @@ export interface IBaseProviderLocal {
   redirect: IRedirectConfig;
 }
 
-async function resolveVerificationResult(
-  validationFunction: () => ValidationFunctionReturnType
-) {
+async function resolveVerificationResult(validationFunction: () => ValidationFunctionReturnType) {
   try {
     let results = validationFunction();
 
@@ -72,11 +70,7 @@ export class BaseProvider {
    *
    * @deprecated this helper function should know longer be used
    */
-  performRedirect(
-    response: Response,
-    type: TRedirectType,
-    success: boolean = true
-  ): void {
+  performRedirect(response: Response, type: TRedirectType, success: boolean = true): void {
     if (this.shouldRedirect(type)) {
       this.redirect(response, type, success);
     }
@@ -88,7 +82,7 @@ export class BaseProvider {
     next();
   }
 
-protected async handleLogin(config: IHandleLoginConfig) {
+  protected async handleLogin(config: IHandleLoginConfig) {
     // Validate required config properties
 
     const context = config.context || {};
@@ -102,9 +96,7 @@ protected async handleLogin(config: IHandleLoginConfig) {
     const local = this._local;
 
     try {
-      const { user, info } = await resolveVerificationResult(
-        validateUserFunction
-      );
+      const { user, info } = await resolveVerificationResult(validateUserFunction);
 
       if (!user) {
         return this.handleAuthError({
@@ -114,9 +106,7 @@ protected async handleLogin(config: IHandleLoginConfig) {
       }
 
       if (!context.next || typeof context.next !== "function") {
-        throw new Error(
-          "Next function must be provided and should be a function."
-        );
+        throw new Error("Next function must be provided and should be a function.");
       }
 
       await req.session.create(user);
@@ -137,7 +127,7 @@ protected async handleLogin(config: IHandleLoginConfig) {
     }
   }
 
- protected handleAuthError(config: IHandleAuthErrorConfig) {
+  protected handleAuthError(config: IHandleAuthErrorConfig) {
     // Check if the required config properties are provided
 
     const context = config.context || {};
@@ -151,9 +141,7 @@ protected async handleLogin(config: IHandleLoginConfig) {
     }
 
     if (!context.next || typeof context.next !== "function") {
-      throw new Error(
-        "Next function must be provided and should be a function."
-      );
+      throw new Error("Next function must be provided and should be a function.");
     }
 
     // Destructure the request and response from the config
