@@ -7,11 +7,18 @@ import path from "path";
 const router = Router();
 
 router.get("/", function (req, res) {
-  res.render("index", { user: req.user || {}, session: JSON.stringify(req.session) });
+  res.render("index", {
+    user: req.user || {},
+    session: JSON.stringify(req.session),
+  });
 });
 
 router.get("/error", function (req, res) {
-  res.render("error", { error: req.query.message });
+  res.render("error", {
+    user: req.user || {},
+    session: JSON.stringify(req.session),
+    error: req.query.message,
+  });
 });
 
 router.get("/dashboard", function (req, res) {
@@ -23,7 +30,10 @@ router.get("/dashboard", function (req, res) {
 
 router.post("/logout", async (req, res) => {
   await req.logout();
-  res.render("logout", { user: req.user || {}, session: JSON.stringify(req.session) });
+  res.render("logout", {
+    user: req.user || {},
+    session: JSON.stringify(req.session),
+  });
 });
 
 export default router;

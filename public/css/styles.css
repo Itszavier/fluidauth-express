@@ -126,7 +126,7 @@ p {
 }
 
 .form_control {
-  width: 600px;
+  width: 480px;
 }
 
 .form_control input {
@@ -165,8 +165,10 @@ p {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-weight: bold;
+  justify-content: center;
   display: flex;
   align-items: center;
+  gap: 10px;
   font-size: 18px;
   text-transform: capitalize;
   background-color: var(--secondary-bg);
@@ -176,8 +178,9 @@ p {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 100%;
-
+  width: 480px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   align-items: center;
 }
 
@@ -190,5 +193,12 @@ p {
 }
 
 .login-btn {
-  width: 40%;
+  width: 200px;
+}
+
+.error {
+  background-color: var(--secondary-bg);
+  width: 800px;
+  font-size: 40px;
+  text-align: center;
 }
