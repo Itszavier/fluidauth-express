@@ -38,6 +38,7 @@
   "author": "Imani Brown",
   "license": "ISC",
   "devDependencies": {
+    "@changesets/cli": "^2.27.8",
     "@types/cookie-parser": "^1.4.7",
     "@types/jsonwebtoken": "^9.0.6",
     "body-parser": "^1.20.3",
