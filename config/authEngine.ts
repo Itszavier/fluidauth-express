@@ -46,6 +46,7 @@ const Credential = new CredentialProvider({
 const authService = new AuthService({
   redirect: {
     onLoginSuccess: "/dashboard",
+    onLoginFailure: '/error'
   },
   providers: [Github, Credential],
   session: new Session({

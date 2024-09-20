@@ -10,6 +10,10 @@ router.get("/", function (req, res) {
   res.render("index", { user: req.user || {}, session: JSON.stringify(req.session) });
 });
 
+router.get("/error", function (req, res) {
+  res.render("error", { error: req.query.message });
+});
+
 router.get("/dashboard", function (req, res) {
   res.render("dashboard", {
     user: req.user || {},

@@ -46,7 +46,9 @@ export class AuthService {
 
   public authenticate(providerName: string) {
     if (!providerName) {
-      throw new Error("[FluidAuth](authenticate): Provider name must be specified.");
+      throw new Error(
+        "[FluidAuth](authenticate): Provider name must be specified."
+      );
     }
 
     const provider = this.providers.find((p) => p.config.name === providerName);
@@ -80,14 +82,20 @@ export class AuthService {
 
   public serializeUser(callback: (user: any) => any) {
     if (typeof callback !== "function") {
-      throw new Error("[FluidAuth]: serializeUser callback must be a function.");
+      throw new Error(
+        "[FluidAuth]: serializeUser callback must be a function."
+      );
     }
     this._session.serializeUser = callback;
   }
 
-  public deserializeUser(callback: (id: string) => Promise<Express.User | null>) {
+  public deserializeUser(
+    callback: (id: string) => Promise<Express.User | null>
+  ) {
     if (typeof callback !== "function") {
-      throw new Error("[FluidAuth]: deserializeUser callback must be a function.");
+      throw new Error(
+        "[FluidAuth]: deserializeUser callback must be a function."
+      );
     }
     this._session.deserializeUser = callback;
   }
@@ -126,25 +134,35 @@ export class AuthService {
     this.providers.forEach((provider) => {
       provider.shouldRedirect = shouldRedirectFunction;
       provider.redirect = redirectFunction;
+      provider._local = { redirect: this.redirectConfig };
     });
   }
 
   private shouldRedirect(type: TRedirectType): boolean {
     switch (type) {
       case "login":
-        return !!this.redirectConfig.onLoginSuccess || !!this.redirectConfig.onLoginFailure;
+        return (
+          !!this.redirectConfig.onLoginSuccess ||
+          !!this.redirectConfig.onLoginFailure
+        );
       default:
         return false;
     }
   }
 
-  private redirect(response: Response, type: TRedirectType, success: boolean = true): void {
+  private redirect(
+    response: Response,
+    type: TRedirectType,
+    success: boolean = true
+  ): void {
     if (!this.redirectConfig) return; // Handle undefined case
 
     let redirectUrl: string | undefined;
 
     if (type === "login") {
-      redirectUrl = success ? this.redirectConfig.onLoginSuccess : this.redirectConfig.onLoginFailure;
+      redirectUrl = success
+        ? this.redirectConfig.onLoginSuccess
+        : this.redirectConfig.onLoginFailure;
     }
 
     if (redirectUrl) {
