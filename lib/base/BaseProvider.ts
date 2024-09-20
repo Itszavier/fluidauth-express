@@ -65,7 +65,6 @@ export class BaseProvider {
     this.config = config;
   }
 
-
   public authenticate(req: Request, res: Response, next: NextFunction) {}
 
   public async handleCallback(req: Request, res: Response, next: NextFunction) {
@@ -135,7 +134,7 @@ export class BaseProvider {
     }
 
     // Destructure the request and response from the config
-    const { req, res } = context;
+    const { res } = context;
 
     const local = this._local;
 
