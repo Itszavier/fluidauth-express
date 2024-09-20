@@ -122,11 +122,10 @@ export class AuthService {
 
   private addToProviders() {
     const shouldRedirectFunction = this.shouldRedirect.bind(this);
-    const redirectFunction = this.redirect.bind(this);
+
 
     this.providers.forEach((provider) => {
       provider.shouldRedirect = shouldRedirectFunction;
-      provider.redirect = redirectFunction;
       provider._local = { redirect: this.redirectConfig };
     });
   }
@@ -139,26 +138,5 @@ export class AuthService {
         return false;
     }
   }
-
-  private redirect(response: Response, type: TRedirectType, success: boolean = true): void {
-    if (!this.redirectConfig) return; // Handle undefined case
-
-    let redirectUrl: string | undefined;
-
-    if (type === "login") {
-      redirectUrl = success ? this.redirectConfig.successRedirect : this.redirectConfig.successRedirect;
-    }
-
-    if (redirectUrl) {
-      response.redirect(redirectUrl);
-    }
-  }
-
-  /* private getRedirectUrl(
-    req: Request,
-    config: string | ((req: Request, res: Response) => string) | undefined
-  ): string | undefined {
-    if (!config) return undefined;
-    return typeof config === "function" ? config(req, req.res!) : config;
-  }*/
+ 
 }

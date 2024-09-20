@@ -59,22 +59,12 @@ async function resolveVerificationResult(validationFunction: () => ValidationFun
 export class BaseProvider {
   config: BaseProviderConfig;
   shouldRedirect!: TShouldRedirectFunction;
-  redirect!: TRedirectFunction;
   _local!: IBaseProviderLocal;
 
   constructor(config: BaseProviderConfig) {
     this.config = config;
   }
 
-  /**
-   *
-   * @deprecated this helper function should know longer be used
-   */
-  performRedirect(response: Response, type: TRedirectType, success: boolean = true): void {
-    if (this.shouldRedirect(type)) {
-      this.redirect(response, type, success);
-    }
-  }
 
   public authenticate(req: Request, res: Response, next: NextFunction) {}
 
