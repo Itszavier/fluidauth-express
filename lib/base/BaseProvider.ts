@@ -111,8 +111,8 @@ export class BaseProvider {
 
       await req.session.create(user);
 
-      if (local.redirect.onLoginSuccess) {
-        return res.redirect(local.redirect.onLoginSuccess);
+      if (local.redirect.successRedirect) {
+        return res.redirect(local.redirect.successRedirect);
       }
 
       res.status(200).json({
@@ -155,8 +155,8 @@ export class BaseProvider {
       "Something went wrong during the provider part of the authentication flow. The creator of this provider did not specify a descriptive error message.";
 
     // Handle failure redirect if configured in AuthService
-    if (local.redirect && local.redirect.onLoginFailure) {
-      const url = local.redirect.onLoginFailure;
+    if (local.redirect && local.redirect.successRedirect) {
+      const url = local.redirect.successRedirect;
       const query = qs.stringify({ message: encodeURIComponent(message) });
       res.redirect(`${url}?${query}`);
       return;

@@ -8,8 +8,8 @@ import { TRedirectType } from "../base";
 import { validateSessionConfig } from "../utils/dev";
 
 export interface IRedirectConfig {
-  onLoginSuccess?: string;
-  onLoginFailure?: string;
+  successRedirect?: string; // URL to redirect to after successful login
+  failureRedirect?: string;
 }
 
 export interface IAuthServiceConfig {
@@ -134,7 +134,7 @@ export class AuthService {
   private shouldRedirect(type: TRedirectType): boolean {
     switch (type) {
       case "login":
-        return !!this.redirectConfig.onLoginSuccess || !!this.redirectConfig.onLoginFailure;
+        return !!this.redirectConfig.successRedirect || !!this.redirectConfig.successRedirect;
       default:
         return false;
     }
@@ -146,7 +146,7 @@ export class AuthService {
     let redirectUrl: string | undefined;
 
     if (type === "login") {
-      redirectUrl = success ? this.redirectConfig.onLoginSuccess : this.redirectConfig.onLoginFailure;
+      redirectUrl = success ? this.redirectConfig.successRedirect : this.redirectConfig.successRedirect;
     }
 
     if (redirectUrl) {

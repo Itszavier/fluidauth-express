@@ -13,8 +13,8 @@ dotenv.config();
 
 const authService = new AuthService({
   redirect: {
-    onLoginSuccess: "/dashboard",
-    onLoginFailure: "/error",
+    successRedirect: "/dashboard",
+    failureRedirect: "/error",
   },
   providers: [Github, Credential, Google],
 
