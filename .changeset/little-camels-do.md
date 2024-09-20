@@ -1,5 +1,5 @@
 ---
-"@fluidauth/express": patch
+"@fluidauth/express": minor
 ---
 
 Enhance provider creation with the addition of handleLogin function, improved error handling, change of IAuthResponse to IValidationResponse, and a new return type for the validation function.
