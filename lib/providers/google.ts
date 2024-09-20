@@ -3,8 +3,8 @@
 import querystring from "querystring";
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
-import { BaseProvider, IValidationData } from "../base/BaseProvider";
-import { VerifyUserFunctionReturnType } from "../base";
+import { BaseProvider } from "../base/BaseProvider";
+import { ValidationFunctionReturnType } from "../base";
 
 export interface IGoogleProfile {
   name: string;
@@ -31,11 +31,14 @@ export interface IGoogleProviderConfig {
     scopes?: string[];
   };
 
-  verifyUser: (GoogleAuthData: IGoogleData, Profile: IGoogleProfile) => VerifyUserFunctionReturnType;
+  validateUser: (
+    GoogleAuthData: IGoogleData,
+    Profile: IGoogleProfile
+  ) => ValidationFunctionReturnType;
 }
 
 export class GoogleProvider extends BaseProvider {
-  private configOptions: IGoogleProviderConfig;
+  private providerConfig: IGoogleProviderConfig;
 
   constructor(config: IGoogleProviderConfig) {
     super({
@@ -43,21 +46,21 @@ export class GoogleProvider extends BaseProvider {
       type: "OAuth2",
     });
 
-    this.configOptions = config;
+    this.providerConfig = config;
   }
 
   authenticate(req: Request, res: Response): void {
     const state = crypto.randomBytes(8).toString("hex");
 
-    const scopes = this.configOptions.credential.scopes
-      ? this.configOptions.credential.scopes.join(" ")
+    const scopes = this.providerConfig.credential.scopes
+      ? this.providerConfig.credential.scopes.join(" ")
       : "openid profile email";
 
     const config = {
       response_type: "code",
-      client_id: this.configOptions.credential.clientId,
+      client_id: this.providerConfig.credential.clientId,
       scope: scopes,
-      redirect_uri: this.configOptions.credential.redirectUri,
+      redirect_uri: this.providerConfig.credential.redirectUri,
       state: state,
     };
 
@@ -94,9 +97,9 @@ export class GoogleProvider extends BaseProvider {
 
     const params = new URLSearchParams({
       code: code,
-      client_id: this.configOptions.credential.clientId,
-      client_secret: this.configOptions.credential.clientSecret,
-      redirect_uri: this.configOptions.credential.redirectUri,
+      client_id: this.providerConfig.credential.clientId,
+      client_secret: this.providerConfig.credential.clientSecret,
+      redirect_uri: this.providerConfig.credential.redirectUri,
       grant_type: "authorization_code",
     });
 
@@ -123,27 +126,40 @@ export class GoogleProvider extends BaseProvider {
     }
   }
 
-  async handleRedirectUri(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleCallback(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
       const code = req.query.code;
-      const error = req.query.error;
+      const error = req.query.error as string | undefined;
 
       if (error) {
-        res.status(401).json({
-          error: "access_denied",
-          message: "Authorization was denied. Please try again or contact support if you need assistance.",
-        });
+        this.handleAuthError({ context: { req, res, next }, message: error });
         return;
       }
 
-      const data: IGoogleData = await this.exchangeCodeForAccessToken(code as string);
+      const data: IGoogleData = await this.exchangeCodeForAccessToken(
+        code as string
+      );
 
       const profile = await this.getUserInfo(data.access_token);
+      const { validateUser } = this.providerConfig;
+      const validationFunction = validateUser.bind(null, data, profile);
 
-      const verifyFunction = this.configOptions.verifyUser.bind(null, data, profile);
-
-      await this.handleLogin(req, res, verifyFunction);
+      await this.handleLogin({
+        context: { req, res, next },
+        validationFunction,
+      });
     } catch (error) {
+      if (error instanceof Error) {
+        this.handleAuthError({
+          context: { req, res, next },
+          message: error.message,
+        });
+        return;
+      }
       next(error);
     }
   }

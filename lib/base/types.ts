@@ -6,12 +6,12 @@ export interface ErrorInfo {
   name: string;
 }
 
-export interface IAuthResponse {
+export interface IValidationResponse {
   info?: { message: string; code: number; name?: string };
   user: Express.User | null;
 }
 
-export type VerifyUserFunctionReturnType = Promise<IAuthResponse> | IAuthResponse;
+export type ValidationFunctionReturnType = Promise<IValidationResponse> | IValidationResponse;
 
 export type SerializeUserFunction = (user: Express.User) => any;
 

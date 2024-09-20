@@ -3,13 +3,13 @@ import qs from "querystring";
 import { Request, Response, NextFunction } from "express";
 import { ErrorName, FluidAuthError } from "../core/Error";
 import {
-  IAuthResponse,
+  IValidationResponse,
   TRedirectFunction,
   TRedirectType,
   TShouldRedirectFunction,
+  ValidationFunctionReturnType,
 } from "./types";
 import { IRedirectConfig } from "../core";
-import { config } from "dotenv";
 
 /** @format */
 type BaseProviderConfig =
@@ -21,28 +21,6 @@ type BaseProviderConfig =
       type: "OAuth2";
       name: string;
     };
-
-async function resolveVerificationResult(
-  verifyFunction: () => Promise<IAuthResponse> | IAuthResponse
-) {
-  try {
-    let results = verifyFunction();
-
-    if (results instanceof Promise) {
-      results = await results;
-    }
-
-    return results;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export interface IValidationData {
-  info?: Error | { message?: string; code?: number } | null;
-  error?: Error | null;
-  user?: Express.User | null;
-}
 
 export interface IHttpContext {
   req: Request;
@@ -57,11 +35,27 @@ export interface IHandleAuthErrorConfig {
 
 interface IHandleLoginConfig {
   context: IHttpContext;
-  validateUserFunction: () => Promise<IAuthResponse> | IAuthResponse;
+  validationFunction: () => ValidationFunctionReturnType;
 }
 
 export interface IBaseProviderLocal {
   redirect: IRedirectConfig;
+}
+
+async function resolveVerificationResult(
+  validationFunction: () => ValidationFunctionReturnType
+) {
+  try {
+    let results = validationFunction();
+
+    if (results instanceof Promise) {
+      results = await results;
+    }
+
+    return results;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export class BaseProvider {
@@ -74,6 +68,10 @@ export class BaseProvider {
     this.config = config;
   }
 
+  /**
+   *
+   * @deprecated this helper function should know longer be used
+   */
   performRedirect(
     response: Response,
     type: TRedirectType,
@@ -84,43 +82,17 @@ export class BaseProvider {
     }
   }
 
-  async handleRedirectUri(req: Request, res: Response, next: NextFunction) {
-    console.warn(
-      `${this.config.name} Provider redirect uri handler function not implemented`
-    );
+  public authenticate(req: Request, res: Response, next: NextFunction) {}
+
+  public async handleCallback(req: Request, res: Response, next: NextFunction) {
     next();
   }
 
-  async checkVerificationResult(
-    verifyFunction: () => Promise<IAuthResponse> | IAuthResponse
-  ) {
-    try {
-      let results = verifyFunction();
-
-      if (results instanceof Promise) {
-        results = await results;
-      }
-
-      return results;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Example method to demonstrate type narrowing
-  authenticate(req: Request, res: Response, next: NextFunction) {}
-
-  handleFailureRedirect(res: Response) {
-    if (this.shouldRedirect("login")) {
-      this.redirect(res, "login", true);
-    }
-  }
-
-  async handleLogin(config: IHandleLoginConfig) {
+protected async handleLogin(config: IHandleLoginConfig) {
     // Validate required config properties
 
     const context = config.context || {};
-    const validateUserFunction = config.validateUserFunction;
+    const validateUserFunction = config.validationFunction;
 
     if (!context.req || !context.res) {
       throw new Error("Request and Response objects must be provided.");
@@ -165,10 +137,11 @@ export class BaseProvider {
     }
   }
 
-  handleAuthError(config: IHandleAuthErrorConfig) {
+ protected handleAuthError(config: IHandleAuthErrorConfig) {
     // Check if the required config properties are provided
 
     const context = config.context || {};
+
     if (!context.req) {
       throw new Error("Request object must be provided.");
     }

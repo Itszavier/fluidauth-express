@@ -3,13 +3,13 @@
 import { Request, Response, NextFunction } from "express";
 import { BaseProvider } from "../base/BaseProvider";
 import { ErrorName, FluidAuthError } from "../core/Error";
-import { VerifyUserFunctionReturnType } from "../base";
+import { ValidationFunctionReturnType } from "../base";
 
 interface ICredentialProviderConfig {
   validateUser: (
     email: string,
     password: string
-  ) => VerifyUserFunctionReturnType; // Use Promise for async operations
+  ) => ValidationFunctionReturnType; // Use Promise for async operations
 }
 
 export class CredentialProvider extends BaseProvider {
@@ -34,15 +34,12 @@ export class CredentialProvider extends BaseProvider {
     }
 
     try {
-      const validateUserFunction = this.providerConfig.validateUser.bind(
-        null,
-        email,
-        password
-      );
+      const { validateUser } = this.providerConfig;
+      const validationFunction = validateUser.bind(null, email, password);
 
       await this.handleLogin({
         context: { req, res, next },
-        validateUserFunction,
+        validationFunction,
       });
     } catch (error) {
       return next(error); // Pass any errors that occurred during verification
