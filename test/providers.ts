@@ -1,12 +1,11 @@
 /** @format */
-import { CredentialProvider } from "./lib/providers/credential";
-import { GithubProvider } from "./lib/providers/github";
-import { GoogleProvider } from "./lib/providers/google";
-import { users } from "./mock";
+import { CredentialProvider } from "../lib/providers/credential";
+import { GithubProvider } from "../lib/providers/github";
+import { GoogleProvider } from "../lib/providers/google";
+import { users } from "../test/mock";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 
 export const googleProvider = new GoogleProvider({
   credential: {
@@ -15,7 +14,7 @@ export const googleProvider = new GoogleProvider({
     redirectUri: "https://dfkpzk-3000.csb.app/redirect/google",
   },
 
-  async verifyUser(data, profile) {
+  async validateUser(data, profile) {
     const userExist = users.find((user) => user.email === profile.email);
 
     if (userExist) {
@@ -34,4 +33,3 @@ export const googleProvider = new GoogleProvider({
     return { user };
   },
 });
-

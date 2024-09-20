@@ -17,7 +17,7 @@ router.get("/error", function (req, res) {
   res.render("error", {
     user: req.user || {},
     session: JSON.stringify(req.session),
-    error: req.query.message,
+    error: decodeURIComponent(req.query.message as string),
   });
 });
 

@@ -6,10 +6,7 @@ import { ErrorName, FluidAuthError } from "../core/Error";
 import { ValidationFunctionReturnType } from "../base";
 
 interface ICredentialProviderConfig {
-  validateUser: (
-    email: string,
-    password: string
-  ) => ValidationFunctionReturnType; // Use Promise for async operations
+  validateUser: (email: string, password: string) => ValidationFunctionReturnType; // Use Promise for async operations
 }
 
 export class CredentialProvider extends BaseProvider {
@@ -19,11 +16,11 @@ export class CredentialProvider extends BaseProvider {
     super({ type: "Credentials", name: "credential" });
 
     this.providerConfig = config;
+    
   }
 
   async authenticate(req: Request, res: Response, next: NextFunction) {
-    const { email, password }: { email: string; password: string } =
-      req.body || {};
+    const { email, password }: { email: string; password: string } = req.body || {};
 
     if (!email || !password) {
       this.handleAuthError({

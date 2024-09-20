@@ -157,7 +157,7 @@ export class BaseProvider {
     // Handle failure redirect if configured in AuthService
     if (local.redirect && local.redirect.onLoginFailure) {
       const url = local.redirect.onLoginFailure;
-      const query = qs.stringify({ message });
+      const query = qs.stringify({ message: encodeURIComponent(message) });
       res.redirect(`${url}?${query}`);
       return;
     }
