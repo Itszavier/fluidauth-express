@@ -28,4 +28,3 @@ public
 
 # Ignore documentation and security files
 .npmignore
-SECURITY.md
