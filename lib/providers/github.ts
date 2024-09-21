@@ -62,35 +62,24 @@ export interface IGithubProviderCredentialConfig {
 
 export interface IGithubProviderConfig {
   credential: IGithubProviderCredentialConfig;
-  validateUser: (
-    data: IGithubResponse,
-    profile: IGithubProfile
-  ) => ValidationFunctionReturnType;
+  validateUser: (data: IGithubResponse, profile: IGithubProfile) => ValidationFunctionReturnType;
 }
 
 export class GithubProvider extends BaseProvider {
   providerConfig: IGithubProviderConfig;
 
   constructor(providerConfig: IGithubProviderConfig) {
-    super({ type: "OAuth2", name: "github" });
+    super({ type: "OAUTH2", name: "github" });
 
     this.providerConfig = providerConfig;
   }
 
-  async authenticate(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  async authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
     const url = this.generateUrl();
     res.status(200).redirect(url);
   }
 
-  async handleCallback(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async handleCallback(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const error = req.query.error;
       const errorDescription = req.query.error_description;
@@ -107,18 +96,12 @@ export class GithubProvider extends BaseProvider {
         });
       }
 
-      const responseData = await this.exchangeCodeForAccessToken(
-        code as string
-      );
+      const responseData = await this.exchangeCodeForAccessToken(code as string);
       const responseUser = await this.getUser(responseData.access_token);
       const emails = await this.getUserEmails(responseData.access_token);
       const profile = this.format(responseUser, emails);
 
-      const validationFunction = this.providerConfig.validateUser.bind(
-        null,
-        responseData,
-        profile
-      );
+      const validationFunction = this.providerConfig.validateUser.bind(null, responseData, profile);
 
       await this.handleLogin({
         context: { req, res, next },
@@ -140,15 +123,12 @@ export class GithubProvider extends BaseProvider {
         code: code as string,
       });
 
-      const authResponse = await fetch(
-        `https://github.com/login/oauth/access_token?${params}`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      const authResponse = await fetch(`https://github.com/login/oauth/access_token?${params}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
       const data: IGithubResponse = await authResponse.json();
 

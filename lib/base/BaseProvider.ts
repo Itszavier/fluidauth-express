@@ -12,15 +12,20 @@ import {
 import { IRedirectConfig } from "../core";
 
 /** @format */
-type BaseProviderConfig =
-  | {
-      type: "Credentials";
-      name: string;
-    }
-  | {
-      type: "OAuth2";
-      name: string;
-    };
+export enum ProviderType {
+  CREDENTIALS = "CREDENTIALS", // Credentials-based authentication
+  OAUTH2 = "OAUTH2", // OAuth2 authentication
+  SAML = "SAML", // SAML authentication
+  JWT = "JWT", // JWT-based authentication
+  OPENID_CONNECT = "OPENID_CONNECT", // OpenID Connect authentication
+  API_KEY = "API_KEY", // API key-based authentication
+  ANONYMOUS_ACCESS = "ANONYMOUS_ACCESS", // Anonymous access
+}
+
+export type BaseProviderConfig = {
+  type: keyof typeof ProviderType;
+  name: string;
+};
 
 export interface IHttpContext {
   req: Request;

@@ -13,7 +13,7 @@ export class CredentialProvider extends BaseProvider {
   providerConfig: ICredentialProviderConfig;
 
   constructor(config: ICredentialProviderConfig) {
-    super({ type: "Credentials", name: "credential" });
+    super({ type: "CREDENTIALS", name: "credential" });
 
     this.providerConfig = config;
     

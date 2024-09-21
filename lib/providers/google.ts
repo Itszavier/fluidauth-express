@@ -31,10 +31,7 @@ export interface IGoogleProviderConfig {
     scopes?: string[];
   };
 
-  validateUser: (
-    GoogleAuthData: IGoogleData,
-    Profile: IGoogleProfile
-  ) => ValidationFunctionReturnType;
+  validateUser: (GoogleAuthData: IGoogleData, Profile: IGoogleProfile) => ValidationFunctionReturnType;
 }
 
 export class GoogleProvider extends BaseProvider {
@@ -42,8 +39,8 @@ export class GoogleProvider extends BaseProvider {
 
   constructor(config: IGoogleProviderConfig) {
     super({
+      type: "OAUTH2",
       name: "google",
-      type: "OAuth2",
     });
 
     this.providerConfig = config;
@@ -126,11 +123,7 @@ export class GoogleProvider extends BaseProvider {
     }
   }
 
-  async handleCallback(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
+  async handleCallback(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const code = req.query.code;
       const error = req.query.error as string | undefined;
@@ -140,9 +133,7 @@ export class GoogleProvider extends BaseProvider {
         return;
       }
 
-      const data: IGoogleData = await this.exchangeCodeForAccessToken(
-        code as string
-      );
+      const data: IGoogleData = await this.exchangeCodeForAccessToken(code as string);
 
       const profile = await this.getUserInfo(data.access_token);
       const { validateUser } = this.providerConfig;
