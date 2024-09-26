@@ -9,6 +9,7 @@ tsup.config
 
 # Ignore build output and compiled code
 lib
+test
 
 # Ignore server-side files
 server.ts
