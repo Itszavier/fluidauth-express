@@ -1,5 +1,11 @@
 # @fluidauth/express
 
+## 1.1.2
+
+### Patch Changes
+
+- fix redirect problem where the provider redirect you to succcess redirect url instead of the failure redirect when an error occurs
+
 ## 1.1.1
 
 ### Patch Changes

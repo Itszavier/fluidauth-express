@@ -149,8 +149,8 @@ export class BaseProvider {
       "Something went wrong during the provider part of the authentication flow. The creator of this provider did not specify a descriptive error message.";
 
     // Handle failure redirect if configured in AuthService
-    if (local.redirect && local.redirect.successRedirect) {
-      const url = local.redirect.successRedirect;
+    if (local.redirect && local.redirect.failureRedirect) {
+      const url = local.redirect.failureRedirect;
       const query = qs.stringify({ message: encodeURIComponent(message) });
       res.redirect(`${url}?${query}`);
       return;
