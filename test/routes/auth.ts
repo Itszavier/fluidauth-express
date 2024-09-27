@@ -17,12 +17,17 @@ router.get("/session", function (req, res, next) {
 
 router.post("/login", authService.authenticate("credential"));
 
-router.get("/login/google", authService.authenticate("google"));
+router.get("login/google", authService.authenticate("google"));
 
 router.get("/redirect/google", authEngine.handleCallback("google"));
 
 router.get("/login/github", authService.authenticate("github"));
 
 router.get("/redirect/github", authEngine.handleCallback("github"));
+
+
+router.get('/login/discord', authService.authenticate('discord'));
+
+router.get("/redirect/discord", authEngine.handleCallback("discord"));
 
 export default router;

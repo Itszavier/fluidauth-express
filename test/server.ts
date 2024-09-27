@@ -30,7 +30,7 @@ app.use(function (req, res, next) {
 });
 
 // routes
-app.use(authRoutes);
+app.use("/auth", authRoutes);
 app.use(pagesRoutes);
 
 app.listen(PORT, () => {

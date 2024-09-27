@@ -11,7 +11,7 @@
       <h1>Login Page</h1>
       <p>The ultimate easy authencation package</p>
 
-      <form class="form" action="/login" method="post">
+      <form class="form" action="/auth/login" method="post">
         <div class="form_control">
           <label>Email</label>
           <input placeholder="Email" value="user1@gmail.com" type="text" />
@@ -27,8 +27,9 @@
           />
         </div>
         <div class="providers_wrapper">
-          <a href="/login/github" class="providers">github</a>
-          <a href="/login/google" class="providers">google</a>
+          <a href="/auth/login/discord" class="providers">discord</a>
+          <a href="/auth/login/github" class="providers">github</a>
+          <a href="/auth/login/google" class="providers">google</a>
         </div>
         <div class="btn-group">
           <button type="submit" class="login-btn">Login</button>

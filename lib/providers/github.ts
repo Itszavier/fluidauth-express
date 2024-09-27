@@ -86,13 +86,9 @@ export class GithubProvider extends BaseProvider {
       const code = req.query.code;
 
       if (error) {
-        return res.status(401).json({
-          success: false,
-          error: {
-            name: error,
-            message: errorDescription,
-          },
-          message: errorDescription,
+        return this.handleAuthError({
+          context: { req, res, next },
+          message: (errorDescription as string) || (error as string),
         });
       }
 
@@ -108,6 +104,12 @@ export class GithubProvider extends BaseProvider {
         validationFunction,
       });
     } catch (error) {
+      if (error instanceof Error) {
+        return this.handleAuthError({
+          context: { req, res, next },
+          message: error.message,
+        });
+      }
       next(error);
     }
   }

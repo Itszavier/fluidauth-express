@@ -4,10 +4,10 @@ import { AuthService, Session, MemoryStore } from "../../lib";
 import { users } from "../mock";
 import { GoogleProvider, CredentialProvider } from "../../lib/providers";
 import dotenv from "dotenv";
-import { GithubProvider } from "../../lib/providers/github";
 import Github from "../providers/Github";
 import Credential from "../providers/credential";
 import Google from "../providers/google";
+import Discord from "../providers/discord";
 
 dotenv.config();
 
@@ -16,7 +16,8 @@ const authService = new AuthService({
     successRedirect: "/dashboard",
     failureRedirect: "/error",
   },
-  providers: [Github, Credential, Google],
+  
+  providers: [Github, Credential, Google, Discord],
 
   session: new Session({
     secret: "efwfrfergfrgetgvetgtrgtrgrt",

@@ -8,7 +8,7 @@
     <%- include('layout/navbar') %>
 
     <div class="page">
-      <h1>Logout Page</h1>
+      <h1>Dashboard Page</h1>
       <p>The ultimate easy authencation package</p>
 
       <form action="/logout" method="post">
@@ -18,7 +18,7 @@
     </div>
 
     <script>
-      fetch("/session", { method: "GET", credentials: "include" })
+      fetch("/auth/session", { method: "GET", credentials: "include" })
         .then(async (res) => {
           const data = await res.json();
 

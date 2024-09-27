@@ -27,7 +27,6 @@ export class AuthService {
     if (!config.providers || !Array.isArray(config.providers)) {
       throw new Error("[FluidAuth]: Providers must be an array.");
     }
-    console.log(config);
 
     if (config.session instanceof Session) {
       this._session = config.session;
