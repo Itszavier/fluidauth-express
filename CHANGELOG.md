@@ -1,5 +1,11 @@
 # @fluidauth/express
 
+## 1.1.4
+
+### Patch Changes
+
+- Added discord provider
+
 ## 1.1.2
 
 ### Patch Changes

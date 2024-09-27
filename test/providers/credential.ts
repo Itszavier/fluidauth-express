@@ -10,7 +10,6 @@ dotenv.config();
 const Credential = new CredentialProvider({
   async validateUser(email, password) {
     const user = users.find((user) => user.email === email);
-
     return { user: user || null };
   },
 });

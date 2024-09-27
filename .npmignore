@@ -29,3 +29,5 @@ public
 
 # Ignore documentation and security files
 .npmignore
+.changeset
+.github

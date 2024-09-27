@@ -2,6 +2,8 @@
 
 import { DiscordProvider } from "../../lib/providers/discord";
 import dotenv from "dotenv";
+import { generateRandomId } from "./google";
+import { users } from "../mock";
 
 dotenv.config();
 
@@ -13,7 +15,24 @@ const Discord = new DiscordProvider({
   },
 
   validateUser(discordData, profile) {
-    return { user: null };
+    console.log(discordData, profile);
+
+    const user = users.find((user) => user.email === (profile.email as string));
+
+    if (user) {
+      return { user };
+    }
+
+    const createdUser = {
+      name: profile.username || "rfrfef",
+      id: generateRandomId(),
+      email: profile.email as string,
+      password: "",
+    };
+
+    users.push(createdUser);
+
+    return { user: createdUser };
   },
 });
 

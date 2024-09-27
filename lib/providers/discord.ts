@@ -35,13 +35,34 @@ export type DiscordOAuth2Scope =
   | "voice"
   | "webhook.incoming";
 
-interface DiscordData {
+export interface DiscordData {
   token_type: string;
   access_token: string;
   expires_in: number;
   refresh_token: string;
   scope: string;
 }
+
+export interface DiscordProfile {
+  id: string;
+  username: string;
+  avatar: string;
+  discriminator: string;
+  public_flags: number;
+  flags: number;
+  banner: string | null;
+  accent_color: number | null;
+  global_name: string | null;
+  avatar_decoration_data: string | null;
+  banner_color: string | null;
+  clan: string | null;
+  mfa_enabled: boolean;
+  locale: string;
+  premium_type: number;
+  email: string;
+  verified: boolean;
+}
+
 export interface DiscordProviderConfig {
   credential: {
     clientId: string;
@@ -50,12 +71,12 @@ export interface DiscordProviderConfig {
     scopes?: DiscordOAuth2Scope[];
     prompt?: "none" | "consent";
   };
-
-  validateUser(discordData: DiscordData, profile: any): ValidationFunctionReturnType;
+  validateUser(discordData: DiscordData, profile: DiscordProfile): ValidationFunctionReturnType;
 }
 
 export class DiscordProvider extends BaseProvider {
   providerConfig: DiscordProviderConfig;
+  private discordApiBaseUrl = "https://discord.com/api/v10";
 
   constructor(config: DiscordProviderConfig) {
     super({ name: "discord", type: "OAUTH2" });
@@ -67,20 +88,29 @@ export class DiscordProvider extends BaseProvider {
   }
 
   public async handleCallback(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const { code, error, error_description } = req.query;
+    try {
+      const { code, error, error_description } = req.query;
 
-    if (error || error_description) {
-      return this.handleAuthError({
-        context: { req, res, next },
-        message: (error_description as string) || (error as string),
-      });
+      if (error || error_description) {
+        return this.handleAuthError({
+          context: { req, res, next },
+          message: (error_description as string) || (error as string),
+        });
+      }
+
+      const data = await this.exchangeCodeForToken(code as string);
+      const profile = await this.fetchDiscordUser(data.token_type, data.access_token);
+
+      const validationFunction = this.providerConfig.validateUser.bind(null, data, profile);
+
+      await this.handleLogin({ context: { req, res, next }, validationFunction });
+
+    } catch (error) {
+      if (error instanceof Error) {
+        this.handleAuthError({ context: { req, res, next }, message: error.message });
+      }
+      next(error);
     }
-
-    const data = await this.exchangeCodeForToken(code as string);
-
-    const validationFunction = this.providerConfig.validateUser.bind(null, data, null);
-
-    res.json({ message: "worked" });
   }
 
   private async exchangeCodeForToken(code: string): Promise<DiscordData> {
@@ -104,6 +134,21 @@ export class DiscordProvider extends BaseProvider {
     });
 
     return response.json();
+  }
+
+  async fetchDiscordUser(token_type: string, access_token: string): Promise<DiscordProfile> {
+    const response = await fetch(`${this.discordApiBaseUrl}/users/@me`, {
+      headers: {
+        Authorization: `${token_type} ${access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`failed to fetch user due to ${response.statusText} code ${response.status}`);
+    }
+    const user = await response.json();
+
+    return user as DiscordProfile;
   }
 
   generateUrl(): string {
