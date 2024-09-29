@@ -1,5 +1,11 @@
 # @fluidauth/express
 
+## 1.1.5
+
+### Patch Changes
+
+- For credential based authencation the `authservice.authenticate` function act as a middleware meaning it will handle the request then call the next function when finish giving controll over what happens after the authenication proccess
+
 ## 1.1.4
 
 ### Patch Changes

@@ -86,7 +86,7 @@ export class BaseProvider {
       throw new Error("Request and Response objects must be provided.");
     }
 
-    const { req, res } = context;
+    const { req, res, next } = context;
     const local = this._local;
 
     try {
@@ -107,6 +107,10 @@ export class BaseProvider {
 
       if (local.redirect.successRedirect) {
         return res.redirect(local.redirect.successRedirect);
+      }
+
+      if (this.config.type === "CREDENTIALS") {
+        return next();
       }
 
       res.status(200).json({
