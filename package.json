@@ -1,6 +1,6 @@
 {
   "name": "@fluidauth/express",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "A simple and flexible authentication solution for Express.js, making it easy to handle user authentication, sessions, and security features with minimal setup.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -40,7 +40,8 @@
   "devDependencies": {
     "@changesets/cli": "^2.27.8",
     "@types/cookie-parser": "^1.4.7",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
@@ -64,7 +65,6 @@
     "url": "https://github.com/Itszavier/fluidauth-express"
   },
   "dependencies": {
-    "@types/express": "^4.17.21",
     "express": "^4.21.0"
   }
 }

@@ -7,5 +7,6 @@ export default defineConfig({
   format: ["cjs", "esm"], // Output formats
   dts: true, // Generate TypeScript declaration files
   sourcemap: false,
-  // Additional options
+  external: ["express"],
+  target: "node16"
 });
