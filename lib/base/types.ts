@@ -7,8 +7,9 @@ export interface ErrorInfo {
 }
 
 export interface IValidationResponse {
-  info?: { message: string; code: number; name?: string };
-  user: Express.User | null;
+  info?: { message: string; code?: number; name?: string };
+  user?: Express.User | null;
+  error?: typeof Error;
 }
 
 export type ValidationFunctionReturnType = Promise<IValidationResponse> | IValidationResponse;

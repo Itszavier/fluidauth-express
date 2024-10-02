@@ -2,6 +2,7 @@
 import qs from "querystring";
 import { Request, Response, NextFunction } from "express";
 import { ErrorName, FluidAuthError } from "../core/Error";
+
 import {
   IValidationResponse,
   TRedirectFunction,
@@ -67,6 +68,10 @@ export class BaseProvider {
   _local!: IBaseProviderLocal;
 
   constructor(config: BaseProviderConfig) {
+    if (!config.type || !config.name) {
+      throw new Error("[BaseProvider]: (InvalidProvider) Provider name and config must be provided");
+    }
+
     this.config = config;
   }
 
@@ -90,7 +95,7 @@ export class BaseProvider {
     const local = this._local;
 
     try {
-      const { user, info } = await resolveVerificationResult(validateUserFunction);
+      const { user, info, error } = await resolveVerificationResult(validateUserFunction);
 
       if (!user) {
         return this.handleAuthError({
@@ -101,6 +106,10 @@ export class BaseProvider {
 
       if (!context.next || typeof context.next !== "function") {
         throw new Error("Next function must be provided and should be a function.");
+      }
+
+      if (error) {
+        next(error);
       }
 
       await req.session.create(user);
@@ -117,11 +126,7 @@ export class BaseProvider {
         message: "Logged in",
       });
     } catch (error) {
-      if (error instanceof Error) {
-        this.handleAuthError({ context, message: error.message });
-        return;
-      }
-      context.next(error);
+      next(error);
     }
   }
 

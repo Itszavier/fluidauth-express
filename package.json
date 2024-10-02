@@ -1,6 +1,6 @@
 {
   "name": "@fluidauth/express",
-  "version": "1.1.7",
+  "version": "1.1.10",
   "description": "A simple and flexible authentication solution for Express.js, making it easy to handle user authentication, sessions, and security features with minimal setup.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -11,6 +11,7 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    
     "./base": {
       "require": "./dist/base/index.js",
       "import": "./dist/base/index.mjs",

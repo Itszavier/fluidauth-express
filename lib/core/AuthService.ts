@@ -18,6 +18,8 @@ export interface IAuthServiceConfig {
   redirect?: Partial<IRedirectConfig>;
 }
 
+
+
 export class AuthService {
   private _session: Session;
   private providers: BaseProvider[];
