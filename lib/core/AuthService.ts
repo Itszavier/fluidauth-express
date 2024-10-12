@@ -13,7 +13,7 @@ export interface IRedirectConfig {
 }
 
 export interface IAuthServiceConfig {
-  providers: BaseProvider[];
+  providers?: BaseProvider[];
   session: Session | ISessionConfig;
   redirect?: Partial<IRedirectConfig>;
 }
@@ -28,17 +28,6 @@ export class AuthService {
   constructor(config: IAuthServiceConfig) {
     if (!config.providers || !Array.isArray(config.providers)) {
       throw new Error("[FluidAuth]: Providers must be an array.");
-    }
-
-    if (config.session instanceof Session) {
-      this._session = config.session;
-    } else {
-      try {
-        validateSessionConfig(config.session);
-        this._session = new Session(config.session);
-      } catch (error) {
-        throw error;
-      }
     }
 
     this.providers = config.providers;

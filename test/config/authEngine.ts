@@ -12,28 +12,8 @@ import Discord from "../providers/discord";
 dotenv.config();
 
 const authService = new AuthService({
-  redirect: {
-    successRedirect: "/dashboard",
-    failureRedirect: "/error",
-  },
-  
   providers: [Github, Credential, Google, Discord],
-
-  session: new Session({
-    secret: "efwfrfergfrgetgvetgtrgtrgrt",
-    store: new MemoryStore(),
-    cookie: { httpOnly: true },
-  }),
 });
 
-authService.serializeUser(function (user) {
-  return user.id;
-});
-
-authService.deserializeUser(async function (id) {
-  const user = users.find((user) => user.id === id) || null;
-  if (!user) console.log("[deserializeUser]: user not found");
-  return user;
-});
 
 export default authService;
